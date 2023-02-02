@@ -1,2 +1,2 @@
 #!/bin/bash
-gcc main.c -o main.exe
+gcc main.c -o SteamNES.exe
