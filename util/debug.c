@@ -18,9 +18,8 @@ void debug_out(int level, char* str, ...) {
 	vsprintf(debug_str, str, args);
 	va_end(args);
 	// make sure str is nulled out with room for newline
-	for (int i = 0; i <= 3; i++) {
-		debug_str[debug_str_maxlen - i] = 0x0;
-	}
+	debug_str[debug_str_maxlen - 0] = 0x0;
+	debug_str[debug_str_maxlen - 1] = 0x0;
 	// concatenate newline
 	strcat(debug_str, "\n");
 	// check for appropriate severity

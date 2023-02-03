@@ -42,7 +42,7 @@ int rom_load(char* filename) {
 	char header_check[5] = {'N', 'E', 'S', 0x1A, 0x0};
 	for (int i = 0; i < 4; i++) {
 		if (rom_header[i] != header_check[i]) {
-			debug_out(1, "failed to identify NES header\n");
+			debug_out(1, "failed to identify NES header");
 			return 1;
 		}
 	}
