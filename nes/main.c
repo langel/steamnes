@@ -1,8 +1,9 @@
 
 #include "./vars.c"
-#include "./ram.c"
+
+#include "./addr.c"
 #include "./apu.c"
-#include "./ppu.c"
 #include "./cpu.c"
+#include "./ppu.c"
 
 #include "./mbu.c"
