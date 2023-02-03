@@ -17,7 +17,11 @@ int rom_chr_size;
 uint8_t* rom_chr_data;
 int rom_chr_start;
 
+
 int rom_load(char* filename) {
+	// XXX TODO
+	// chr and prg ram
+	// NES2.0 higher mapper nybble
 	rom_filename = malloc(strlen(filename));
 	strcpy(rom_filename, filename);
 	FILE* rom = fopen(filename, "rb");

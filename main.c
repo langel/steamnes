@@ -15,5 +15,6 @@ int main(int argc, char* args[]) {
 	debug_out(1, "SteamNES");
 	int error = rom_load("game_rom.nes");
 	if (error) debug_out(0, "failed to load or identify rom file");
+	mbu_start();
 	return 0;
 }
