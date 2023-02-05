@@ -19,6 +19,7 @@ void mbu_run() {
 		apu_clock();
 		if (mbu_clock_count % cpu_clock_div == 0) cpu_cycle();
 		if (mbu_clock_count % ppu_clock_div == 0) ppu_dot();
+		cpu_nmi = ppu_int;
 		mbu_clock_count++;
 	}
 }

@@ -23,9 +23,11 @@ uint16_t cpu_pc;
 uint8_t cpu_flags;
 uint16_t cpu_addr_bus;
 uint8_t cpu_data_bus;
-int pin_irq;
-int pin_nmi;
-int pin_rw;
+
+// pins
+int cpu_irq;
+int cpu_nmi;
+int cpu_rw;
 
 void cpu_reset() {
 	cpu_cycle_count = 0;
