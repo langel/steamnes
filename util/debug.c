@@ -12,21 +12,16 @@ int debug_level = 0;
 char debug_str[debug_str_maxlen];
 
 void debug_out(int level, char* str, ...) {
-	// prep string
-	va_list args;
-	va_start(args, str);
-	vsprintf(debug_str, str, args);
-	va_end(args);
-	// make sure str is nulled out with room for newline
-	debug_str[debug_str_maxlen - 0] = 0x0;
-	debug_str[debug_str_maxlen - 1] = 0x0;
-	// concatenate newline
-	strcat(debug_str, "\n");
 	// check for appropriate severity
 	if (level <= debug_level) {
+		// prep string
+		va_list args;
+		va_start(args, str);
+		vsprintf(debug_str, str, args);
+		va_end(args);
 		// command line interface
 		if (debug_output_target == cli || debug_output_target == all) {
-			printf(debug_str);
+			printf("%s\n", debug_str);
 		}
 		// graphical user interface
 		if (debug_output_target == gui || debug_output_target == all) {
