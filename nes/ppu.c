@@ -25,6 +25,9 @@ void ppu_reset() {
 	ppu_dot_count = 0;
 	ppu_dot_frame_max = 89341;
 	ppu_clock_div = ppu_clock_div_ntsc;
+	for (int i = 0; i < 8; i++) {
+		ppu_regs[i] = 0;
+	}
 }
 
 void ppu_dot() {
