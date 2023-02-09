@@ -3,9 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "./util/main.c"
-#include "./nes/main.c"
-#include "./emu/main.c"
+//#include "./fcl/core.c"
+#include "./fcl/util/debug.c"
+#include "./nes/core.c"
+#include "./emu/core.c"
 
 
 

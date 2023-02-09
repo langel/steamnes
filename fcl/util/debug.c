@@ -1,4 +1,5 @@
-#include <execinfo.h>
+// XXX not Windows compatible :(
+//#include <execinfo.h>
 
 #define debug_trace_maxlen 256
 #define debug_str_maxlen 2048
@@ -15,6 +16,7 @@ int debug_level = 0;
 char debug_str[debug_str_maxlen];
 
 void debug_trace() {
+	/*
 	void* array[debug_trace_maxlen];
 	char** strings;
 	int size;
@@ -27,6 +29,7 @@ void debug_trace() {
 		}
 	}
 	free(strings);
+	*/
 }
 
 void debug_out(int level, char* str, ...) {
@@ -52,3 +55,4 @@ void debug_out(int level, char* str, ...) {
 		}
 	}
 }
+
