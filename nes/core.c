@@ -5,7 +5,7 @@
 
 
 #include "./apu.c"
-#include "./cpu.c"
 #include "./ppu.c"
+#include "./cpu.c"
 
 #include "./mbu.c"

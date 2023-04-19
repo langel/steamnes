@@ -3,7 +3,8 @@
 	ppu.c
 */
 
-uint8_t ppu_vram[0x04000] = { 0 };
+uint8_t ppu_ram[0x4000] = { 0 };
+uint8_t ppu_oam[0x0100] = { 0 };
 
 #define ppu_clock_div_ntsc = 4;
 #define ppu_clock_div_pal = 5;
