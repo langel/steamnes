@@ -12,6 +12,7 @@ void mbu_start() {
 	cpu_reset();
 	ppu_reset();
 	mbu_running = 1;
+	debug_out(3, "PRG Reset Vector: %#06x", cpu_pw);
 }
 
 void mbu_run() {

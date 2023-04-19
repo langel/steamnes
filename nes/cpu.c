@@ -5,13 +5,13 @@
 
 uint8_t cpu_addr[0x10000] = { 0 };
 
-#define cpu_vector_nmi   0xfffa;
-#define cpu_vector_reset 0xfffc;
-#define cpu_vector_irq   0xfffe;
+#define cpu_vector_nmi   0xfffa
+#define cpu_vector_reset 0xfffc
+#define cpu_vector_irq   0xfffe
 
-#define cpu_clock_div_ntsc  12;
-#define cpu_clock_div_pal   16;
-#define cpu_clock_div_dendy 15;
+#define cpu_clock_div_ntsc  12
+#define cpu_clock_div_pal   16
+#define cpu_clock_div_dendy 15
 
 int cpu_clock_div;
 uint32_t cpu_cycle_count;
@@ -45,6 +45,7 @@ int cpu_rw;
 void cpu_reset() {
 	cpu_cycle_count = 0;
 	cpu_clock_div = cpu_clock_div_ntsc;
+	cpu_pw = cpu_addr[cpu_vector_reset] + (cpu_addr[cpu_vector_reset + 1] << 8);
 }
 
 /*
@@ -75,6 +76,7 @@ void cpu_nmi() {
 
 void cpu_cycle() {
 	if (cpu_cl) {
+		cpu_cycle_count++;
 		cpu_cl--;
 		return;
 	}

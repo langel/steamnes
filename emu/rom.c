@@ -11,11 +11,12 @@ uint8_t* rom_header;
 char rom_header_type_str[16];
 int rom_mapper;
 int rom_has_trainer;
-int rom_prg_size;
-uint8_t* rom_prg_data;
 int rom_chr_size;
-uint8_t* rom_chr_data;
 int rom_chr_start;
+uint8_t* rom_chr_data;
+int rom_prg_size;
+int rom_prg_start;
+uint8_t* rom_prg_data;
 
 
 int rom_load(char* filename) {
@@ -63,17 +64,36 @@ int rom_load(char* filename) {
 		rom_header_type = NES2;
 		strcpy(rom_header_type_str, "NES2.0");
 	}
-	if (rom_chr_size) {
-		// compensate for header size
-		rom_chr_start = 16 + rom_has_trainer;
-		// compensate for program size
-		rom_chr_start += rom_prg_size;
-	}
+	// compensate for header size
+	rom_prg_start = 16 + rom_has_trainer;
+	// compensate for program size
+	rom_chr_start = rom_prg_start + rom_prg_size;
+	// load all rom data
+	rom_chr_data = malloc(rom_chr_size);
+	memset(rom_chr_data, 0, rom_chr_size);
+	fseek(rom, rom_chr_start, SEEK_SET);
+	fread(rom_chr_data, rom_chr_size, 1, rom);
+	rom_prg_data = malloc(rom_prg_size);
+	memset(rom_prg_data, 0, rom_prg_size);
+	fseek(rom, rom_prg_start, SEEK_SET);
+	fread(rom_prg_data, rom_prg_size, 1, rom);
 	// debug status
 	debug_out(3, "%s header found", rom_header_type_str);
-	debug_out(3, "PRG ROM data size %i", rom_prg_size);
 	debug_out(3, "CHR ROM data size %i", rom_chr_size);
+	debug_out(3, "PRG ROM data size %i", rom_prg_size);
 	debug_out(3, "Mapper %i", rom_mapper);
+	// XXX copy prg to cpu_addr -- where does this live?
+	switch (rom_mapper) {
+		case 0:
+			// NROM128
+			if (rom_prg_size == 16384) 
+				memcpy(cpu_addr + 0xc000, rom_prg_data, rom_prg_size);
+			// NROM256
+			else memcpy(cpu_addr, rom_prg_data, rom_prg_size);
+			break;
+		default:
+			debug_out(0, "Mapper type unsupported!");
+	}
 	// shut it down
 	fclose(rom);
 	free(rom_header);
