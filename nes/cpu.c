@@ -79,6 +79,14 @@ void cpu_nmi() {
 #define txa_op() { cpu_a = cpu_x; cpu_p_set_nz(cpu_a); cpu_pw++; cpu_cl = 2; }
 #define txs_op() { cpu_s = cpu_x;                      cpu_pw++; cpu_cl = 2; }
 #define tya_op() { cpu_a = cpu_y; cpu_p_set_nz(cpu_a); cpu_pw++; cpu_cl = 2; }
+// decrementors and incrementors
+#define dex_op() { cpu_x--; cpu_p_set_nz(cpu_x); cpu_pw++; cpu_cl = 2; }
+#define dey_op() { cpu_y--; cpu_p_set_nz(cpu_y); cpu_pw++; cpu_cl = 2; }
+#define inx_op() { cpu_x++; cpu_p_set_nz(cpu_x); cpu_pw++; cpu_cl = 2; }
+#define iny_op() { cpu_y++; cpu_p_set_nz(cpu_y); cpu_pw++; cpu_cl = 2; }
+// loaders
+#define ldx_imm() { cpu_pw++; cpu_x = cpu_addr[cpu_pw]; cpu_p_set_nz(cpu_x); cpu_pw++; cpu_cl = 2; }
+// storers
 
 void cpu_cycle() {
 	if (cpu_cl) {
@@ -103,9 +111,18 @@ void cpu_cycle() {
 		case 0x8a: txa_op(); break;
 		case 0x9a: txs_op(); break;
 		case 0x98: tya_op(); break;
+		// decrementors and incrementors
+		case 0xca: dex_op(); break;
+		case 0x88: dey_op(); break;
+		case 0xe8: inx_op(); break;
+		case 0xc8: iny_op(); break;
+		// loaders
+		case 0xa2: ldx_imm(); break;
+		// storers
 		default:
 			debug_out(1, "2a03 undefined opcode: 0x%2X", opcode);
 			debug_out(3, "program counter pos: 0x%4X", cpu_pw);
+			debug_out(3, "A: %2x  X: %2x  Y: %2x  S: %2x", cpu_a, cpu_x, cpu_y, cpu_s);
 			debug_out(0, "NEFARIOUS CRASH EXIT");
 			nes_running = 0;
 	}
