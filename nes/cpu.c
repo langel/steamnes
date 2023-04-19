@@ -8,6 +8,9 @@ uint8_t cpu_addr[0x10000] = { 0 };
 #define cpu_vector_nmi   0xfffa
 #define cpu_vector_reset 0xfffc
 #define cpu_vector_irq   0xfffe
+int cpu_addr_nmi;
+int cpu_addr_reset;
+int cpu_addr_irq;
 
 #define cpu_clock_div_ntsc  12
 #define cpu_clock_div_pal   16
@@ -45,7 +48,10 @@ int cpu_rw;
 void cpu_reset() {
 	cpu_cycle_count = 0;
 	cpu_clock_div = cpu_clock_div_ntsc;
-	cpu_pw = cpu_addr[cpu_vector_reset] + (cpu_addr[cpu_vector_reset + 1] << 8);
+	cpu_addr_irq = cpu_addr[cpu_vector_irq] + (cpu_addr[cpu_vector_irq + 1] << 8);
+	cpu_addr_reset = cpu_addr[cpu_vector_reset] + (cpu_addr[cpu_vector_reset + 1] << 8);
+	cpu_addr_nmi = cpu_addr[cpu_vector_nmi] + (cpu_addr[cpu_vector_nmi + 1] << 8);
+	cpu_pw = cpu_addr_reset;
 }
 
 /*
@@ -97,5 +103,10 @@ void cpu_cycle() {
 		case 0x8a: txa_op(); break;
 		case 0x9a: txs_op(); break;
 		case 0x98: tya_op(); break;
+		default:
+			debug_out(1, "2a03 undefined opcode: 0x%2X", opcode);
+			debug_out(3, "program counter pos: 0x%4X", cpu_pw);
+			debug_out(0, "NEFARIOUS CRASH EXIT");
+			nes_running = 0;
 	}
 }

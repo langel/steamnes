@@ -17,5 +17,6 @@ int main(int argc, char* args[]) {
 	int error = rom_load("game_rom.nes");
 	if (error) debug_out(0, "failed to load or identify rom file");
 	mbu_start();
+	mbu_run();
 	return 0;
 }

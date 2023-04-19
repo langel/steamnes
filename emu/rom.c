@@ -86,7 +86,7 @@ int rom_load(char* filename) {
 	switch (rom_mapper) {
 		case 0:
 			// NROM128
-			if (rom_prg_size == 16384) 
+			if (rom_prg_size >> 14 == 1) 
 				memcpy(cpu_addr + 0xc000, rom_prg_data, rom_prg_size);
 			// NROM256
 			else memcpy(cpu_addr, rom_prg_data, rom_prg_size);
