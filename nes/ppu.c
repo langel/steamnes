@@ -13,6 +13,7 @@ uint8_t ppu_oam[0x0100] = { 0 };
 int ppu_dot_count;
 int ppu_dot_frame_max;
 int ppu_clock_div;
+int ppu_write;
 
 uint8_t ppu_regs[8];
 uint16_t ppu_addr_bus;
@@ -28,9 +29,18 @@ void ppu_reset() {
 	ppu_dot_count = 0;
 	ppu_dot_frame_max = 89341;
 	ppu_clock_div = ppu_clock_div_ntsc;
+	ppu_write = 0;
 	for (int i = 0; i < 8; i++) {
 		ppu_regs[i] = 0;
 	}
+}
+
+void ppu_read_reg(int reg) {
+	reg &= 0x7;
+}
+
+void ppu_write_reg(int reg) {
+	reg &= 0x7;
 }
 
 void ppu_dot() {
