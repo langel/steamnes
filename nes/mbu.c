@@ -24,7 +24,7 @@ void mbu_run() {
 		if (!(mbu_clock_count % cpu_clock_div)) cpu_cycle();
 		if (!(mbu_clock_count % ppu_clock_div)) ppu_dot();
 		cpu_nmi = ppu_int;
-		mbu_clock_count++;
+		mbu_cycle_count++;
 		if (!nes_running) return;
 	}
 }

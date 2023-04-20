@@ -4,6 +4,9 @@
 #define clock_dendy clock_pal
 
 int nes_running;
+uint32_t cpu_cycle_count;
+uint32_t ppu_cycle_count;
+uint32_t mbu_cycle_count;
 
 #include "./apu.c"
 #include "./ppu.c"

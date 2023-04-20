@@ -40,4 +40,5 @@ void ppu_dot() {
 		ppu_dot_count = 0;
 	}
 	ppu_dot_count++;
+	ppu_cycle_count++;
 }

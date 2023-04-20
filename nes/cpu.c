@@ -62,9 +62,9 @@ void cpu_nmi() {
 }
 */
 // helper functions
-#define cpu_p_set_nz(byte) { cpu_p &= ~(cpu_fn | cpu_fz); cpu_p |= ((byte) & cpu_fn) | ((byte) ? 0 : cpu_fz); }
-#define cpu_bit_op(byte) { cpu_p = ~(cpu_fn | cpu_fv | cpu_fz); if (byte & cpu_fn) cpu_p |= cpu_fn; if (byte & cpu_fv) cpu_p |= cpu_fv; if (!(byte & cpu_a)) cpu_p |= cpu_fz; }
 #define cpu_addr_set_abs() { cpu_pw++; cpu_addr_bus = cpu_addr[cpu_pw]; cpu_pw++; cpu_addr_bus += cpu_addr[cpu_pw] << 8; cpu_pw++; }
+#define cpu_bit_op(byte) { cpu_p = 0xff - (cpu_fn | cpu_fv | cpu_fz); if (byte & cpu_fn) cpu_p |= cpu_fn; if (byte & cpu_fv) cpu_p |= cpu_fv; if (!(byte & cpu_a)) cpu_p |= cpu_fz; }
+#define cpu_p_set_nz(byte) { cpu_p &= ~(cpu_fn | cpu_fz); cpu_p |= ((byte) & cpu_fn) | ((byte) ? 0 : cpu_fz); cpu_pw++; }
 
 // status registers
 #define clc_op() { cpu_p &= ~cpu_fc; cpu_pw++; cpu_cl = 2; }
@@ -75,17 +75,17 @@ void cpu_nmi() {
 #define sed_op() { cpu_p |=  cpu_fd; cpu_pw++; cpu_cl = 2; }
 #define sei_op() { cpu_p |=  cpu_fi; cpu_pw++; cpu_cl = 2; }
 // transfer registers
-#define tax_op() { cpu_x = cpu_a; cpu_p_set_nz(cpu_x); cpu_pw++; cpu_cl = 2; }
-#define tay_op() { cpu_y = cpu_a; cpu_p_set_nz(cpu_y); cpu_pw++; cpu_cl = 2; }
-#define tsx_op() { cpu_x = cpu_s; cpu_p_set_nz(cpu_x); cpu_pw++; cpu_cl = 2; }
-#define txa_op() { cpu_a = cpu_x; cpu_p_set_nz(cpu_a); cpu_pw++; cpu_cl = 2; }
-#define txs_op() { cpu_s = cpu_x;                      cpu_pw++; cpu_cl = 2; }
-#define tya_op() { cpu_a = cpu_y; cpu_p_set_nz(cpu_a); cpu_pw++; cpu_cl = 2; }
+#define tax_op() { cpu_x = cpu_a; cpu_p_set_nz(cpu_x); cpu_cl = 2; }
+#define tay_op() { cpu_y = cpu_a; cpu_p_set_nz(cpu_y); cpu_cl = 2; }
+#define tsx_op() { cpu_x = cpu_s; cpu_p_set_nz(cpu_x); cpu_cl = 2; }
+#define txa_op() { cpu_a = cpu_x; cpu_p_set_nz(cpu_a); cpu_cl = 2; }
+#define txs_op() { cpu_s = cpu_x; cpu_pw++;            cpu_cl = 2; }
+#define tya_op() { cpu_a = cpu_y; cpu_p_set_nz(cpu_a); cpu_cl = 2; }
 // decrementors and incrementors
-#define dex_op() { cpu_x--; cpu_p_set_nz(cpu_x); cpu_pw++; cpu_cl = 2; }
-#define dey_op() { cpu_y--; cpu_p_set_nz(cpu_y); cpu_pw++; cpu_cl = 2; }
-#define inx_op() { cpu_x++; cpu_p_set_nz(cpu_x); cpu_pw++; cpu_cl = 2; }
-#define iny_op() { cpu_y++; cpu_p_set_nz(cpu_y); cpu_pw++; cpu_cl = 2; }
+#define dex_op() { cpu_x--; cpu_p_set_nz(cpu_x); cpu_cl = 2; }
+#define dey_op() { cpu_y--; cpu_p_set_nz(cpu_y); cpu_cl = 2; }
+#define inx_op() { cpu_x++; cpu_p_set_nz(cpu_x); cpu_cl = 2; }
+#define iny_op() { cpu_y++; cpu_p_set_nz(cpu_y); cpu_cl = 2; }
 // weirdos
 #define bit_abs() { cpu_addr_set_abs(); cpu_bit_op(cpu_addr[cpu_addr_bus]); cpu_cl = 4; }
 // loaders
@@ -128,10 +128,22 @@ void cpu_cycle() {
 		// storers
 		case 0x8e: stx_abs(); break;
 		default:
+			debug_out(1, "PROCESSOR DISCOMBOBULATION");
 			debug_out(1, "2a03 undefined opcode: 0x%2X", opcode);
 			debug_out(3, "program counter pos: 0x%4X", cpu_pw);
 			debug_out(3, "A: %2x  X: %2x  Y: %2x  S: %2x", cpu_a, cpu_x, cpu_y, cpu_s);
-			debug_out(3, "CPU cycle count: %d", cpu_cycle_count);
+			debug_out(3, "C: %d  Z: %d  I: %d  D: %d  B: %d  V: %d  N: %d", 
+				(cpu_p & cpu_fc) ? 1 : 0,
+				(cpu_p & cpu_fz) ? 1 : 0,
+				(cpu_p & cpu_fi) ? 1 : 0,
+				(cpu_p & cpu_fd) ? 1 : 0,
+				(cpu_p & cpu_fb) ? 1 : 0,
+				(cpu_p & cpu_fv) ? 1 : 0,
+				(cpu_p & cpu_fn) ? 1 : 0
+			);
+			debug_out(3, "CPU cycles: %d", cpu_cycle_count);
+			debug_out(3, "PPU cycles: %d", ppu_cycle_count);
+			debug_out(3, "CLK cycles: %d", mbu_cycle_count);
 			debug_out(0, "NEFARIOUS CRASH EXIT");
 			nes_running = 0;
 	}
