@@ -6,9 +6,9 @@
 uint8_t ppu_ram[0x4000] = { 0 };
 uint8_t ppu_oam[0x0100] = { 0 };
 
-#define ppu_clock_div_ntsc  4;
-#define ppu_clock_div_pal   5;
-#define ppu_clock_div_dendy 5;
+#define ppu_clock_div_ntsc  4
+#define ppu_clock_div_pal   5
+#define ppu_clock_div_dendy 5
 
 int ppu_dot_count;
 int ppu_dot_frame_max;

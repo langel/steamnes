@@ -23,7 +23,7 @@ void mbu_start() {
 void mbu_run() {
 	while (mbu_running) {
 		apu_clock();
-		if (!(mbu_clock_count % cpu_clock_div)) cpu_cycle();
+		if (!(mbu_cycle_count % cpu_clock_div)) cpu_cycle();
 		if (cpu_read | cpu_write) {
 			mbu_data_bus = cpu_addr[cpu_addr_bus];
 			if ((cpu_addr_bus & 0x3000) && !(cpu_addr_bus & 0xc000)) {
@@ -32,10 +32,10 @@ void mbu_run() {
 			cpu_read = 0;
 			cpu_write = 0;
 		}
-		if (!(mbu_clock_count % ppu_clock_div)) ppu_dot();
+		if (!(mbu_cycle_count % ppu_clock_div)) ppu_dot();
 		if (ppu_write) {
 		}
-		cpu_nmi = ppu_int;
+		//cpu_nmi = ppu_int;
 		mbu_cycle_count++;
 		if (!nes_running) return;
 	}

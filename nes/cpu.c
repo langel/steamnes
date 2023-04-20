@@ -92,7 +92,7 @@ void cpu_nmi() {
 #define iny_op() { cpu_y++; cpu_p_set_nz(cpu_y); cpu_cl = 2; }
 // weirdos
 #define bit_abs() { cpu_addr_load_abs(); cpu_bit_op(cpu_addr[cpu_addr_bus]); cpu_cl = 4; }
-// branches
+// branchers
 #define jsr_op()  { cpu_addr_load_abs(); cpu_pw = cpu_addr_bus; cpu_push(cpu_addr_bus >> 8); cpu_push(cpu_addr_bus & 0xff); cpu_cl = 6; }
 // comparers
 #define cpx_imm() { cpu_pw++; cpu_p &= ~cpu_fc; if (cpu_x >= cpu_addr[cpu_pw]) cpu_p |= cpu_fc; cpu_p_set_nz((cpu_x - cpu_addr[cpu_pw]) & 0xff); }
@@ -113,6 +113,7 @@ void cpu_cycle() {
 		return;
 	}
 	uint8_t opcode = cpu_addr[cpu_pw];
+	//debug_out(3, "%4x %2x %2x %2x", cpu_pw, opcode, cpu_addr[cpu_pw+1], cpu_addr[cpu_pw+2]);
 	switch(opcode) {
 		// status registers
 		case 0x18: clc_op(); break;
@@ -148,7 +149,7 @@ void cpu_cycle() {
 		case 0x8d: sta_abs(); break;
 		case 0x95: sta_zpx(); break;
 		case 0x8e: stx_abs(); break;
-		case 0x8c: stx_abs(); break;
+		case 0x8c: sty_abs(); break;
 		default:
 			debug_out(1, "PROCESSOR DISCOMBOBULATION");
 			debug_out(1, "2a03 undefined opcode: 0x%2X", opcode);

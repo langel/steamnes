@@ -81,15 +81,19 @@ int rom_load(char* filename) {
 	debug_out(3, "%s header found", rom_header_type_str);
 	debug_out(3, "CHR ROM data size %i", rom_chr_size);
 	debug_out(3, "PRG ROM data size %i", rom_prg_size);
-	debug_out(3, "Mapper %i", rom_mapper);
 	// XXX copy prg to cpu_addr -- where does this live?
 	switch (rom_mapper) {
 		case 0:
 			// NROM128
-			if (rom_prg_size >> 14 == 1) 
+			if (rom_prg_size >> 14 == 1) {
+				debug_out(3, "Mapper %i NROM-128", rom_mapper);
 				memcpy(cpu_addr + 0xc000, rom_prg_data, rom_prg_size);
+			}
 			// NROM256
-			else memcpy(cpu_addr, rom_prg_data, rom_prg_size);
+			else {
+				debug_out(3, "Mapper %i NROM-256", rom_mapper);
+				memcpy(cpu_addr, rom_prg_data, rom_prg_size);
+			}
 			break;
 		default:
 			debug_out(0, "Mapper type unsupported!");
