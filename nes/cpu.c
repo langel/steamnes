@@ -63,6 +63,8 @@ void cpu_nmi() {
 */
 // helper functions
 #define cpu_p_set_nz(byte) { cpu_p &= ~(cpu_fn | cpu_fz); cpu_p |= ((byte) & cpu_fn) | ((byte) ? 0 : cpu_fz); }
+#define cpu_bit_op(byte) { cpu_p = ~(cpu_fn | cpu_fv | cpu_fz); if (byte & cpu_fn) cpu_p |= cpu_fn; if (byte & cpu_fv) cpu_p |= cpu_fv; if (!(byte & cpu_a)) cpu_p |= cpu_fz; }
+#define cpu_addr_set_abs() { cpu_pw++; cpu_addr_bus = cpu_addr[cpu_pw]; cpu_pw++; cpu_addr_bus += cpu_addr[cpu_pw] << 8; cpu_pw++; }
 
 // status registers
 #define clc_op() { cpu_p &= ~cpu_fc; cpu_pw++; cpu_cl = 2; }
@@ -84,9 +86,12 @@ void cpu_nmi() {
 #define dey_op() { cpu_y--; cpu_p_set_nz(cpu_y); cpu_pw++; cpu_cl = 2; }
 #define inx_op() { cpu_x++; cpu_p_set_nz(cpu_x); cpu_pw++; cpu_cl = 2; }
 #define iny_op() { cpu_y++; cpu_p_set_nz(cpu_y); cpu_pw++; cpu_cl = 2; }
+// weirdos
+#define bit_abs() { cpu_addr_set_abs(); cpu_bit_op(cpu_addr[cpu_addr_bus]); cpu_cl = 4; }
 // loaders
 #define ldx_imm() { cpu_pw++; cpu_x = cpu_addr[cpu_pw]; cpu_p_set_nz(cpu_x); cpu_pw++; cpu_cl = 2; }
 // storers
+#define stx_abs() { cpu_addr_set_abs(); cpu_addr[cpu_addr_bus] = cpu_x; cpu_cl = 4; }
 
 void cpu_cycle() {
 	if (cpu_cl) {
@@ -116,13 +121,17 @@ void cpu_cycle() {
 		case 0x88: dey_op(); break;
 		case 0xe8: inx_op(); break;
 		case 0xc8: iny_op(); break;
+		// weirdos
+		case 0x2c: bit_abs(); break;
 		// loaders
 		case 0xa2: ldx_imm(); break;
 		// storers
+		case 0x8e: stx_abs(); break;
 		default:
 			debug_out(1, "2a03 undefined opcode: 0x%2X", opcode);
 			debug_out(3, "program counter pos: 0x%4X", cpu_pw);
 			debug_out(3, "A: %2x  X: %2x  Y: %2x  S: %2x", cpu_a, cpu_x, cpu_y, cpu_s);
+			debug_out(3, "CPU cycle count: %d", cpu_cycle_count);
 			debug_out(0, "NEFARIOUS CRASH EXIT");
 			nes_running = 0;
 	}
