@@ -15,6 +15,7 @@ int ppu_frames;
 int ppu_dot_frame_max;
 int ppu_clock_div;
 int ppu_write;
+uint32_t ppu_dot_downcounter;
 
 uint8_t ppu_regs[8];
 uint16_t ppu_addr_bus;
@@ -31,6 +32,7 @@ void ppu_reset() {
 	ppu_frames = 0;
 	ppu_dot_frame_max = 89341;
 	ppu_clock_div = ppu_clock_div_ntsc;
+	ppu_dot_downcounter = ppu_dot_frame_max;
 	ppu_write = 0;
 	for (int i = 0; i < 8; i++) {
 		ppu_regs[i] = 0;
@@ -47,12 +49,14 @@ void ppu_write_reg(int reg) {
 
 void ppu_dot() {
 	if (ppu_int == 1) ppu_int = 0;
-	if (ppu_dot_count && ppu_dot_count % ppu_dot_frame_max == 0) {
+	if (!ppu_dot_downcounter) {
 		ppu_int = 1;
+		ppu_dot_downcounter = ppu_dot_frame_max;
 		//ppu_dot_count = 0;
 		ppu_frames++;
 		nes_nmi++;
 	}
+	ppu_dot_downcounter--;
 	ppu_dot_count++;
 	ppu_cycle_count++;
 }
