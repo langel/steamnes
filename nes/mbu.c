@@ -15,6 +15,7 @@ void mbu_start() {
 	ppu_reset();
 	mbu_running = 1;
 	nes_running = 1;
+	nes_nmi = nes_irq = 0;
 	debug_out(3, "CPU Reset Vector: 0x%4X", cpu_addr_reset);
 	debug_out(3, "CPU IRQ Vector:   0x%4X", cpu_addr_irq);
 	debug_out(3, "CPU NMI Vector:   0x%4X", cpu_addr_nmi);
@@ -23,7 +24,11 @@ void mbu_start() {
 void mbu_run() {
 	while (mbu_running) {
 		apu_clock();
-		if (!(mbu_cycle_count % cpu_clock_div)) cpu_cycle();
+		if (!(mbu_cycle_count % cpu_clock_div)) {
+			if (nes_nmi) cpu_nmi();
+			else if (nes_irq) cpu_irq();
+			else cpu_cycle();
+		}
 		if (cpu_read | cpu_write) {
 			mbu_data_bus = cpu_addr[cpu_bus];
 			if ((cpu_bus & 0x3000) && !(cpu_bus & 0xc000)) {
