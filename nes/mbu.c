@@ -25,9 +25,9 @@ void mbu_run() {
 		apu_clock();
 		if (!(mbu_cycle_count % cpu_clock_div)) cpu_cycle();
 		if (cpu_read | cpu_write) {
-			mbu_data_bus = cpu_addr[cpu_addr_bus];
-			if ((cpu_addr_bus & 0x3000) && !(cpu_addr_bus & 0xc000)) {
-				(cpu_read) ? ppu_read_reg(cpu_addr_bus) : ppu_write_reg(cpu_addr_bus);
+			mbu_data_bus = cpu_addr[cpu_bus];
+			if ((cpu_bus & 0x3000) && !(cpu_bus & 0xc000)) {
+				(cpu_read) ? ppu_read_reg(cpu_bus) : ppu_write_reg(cpu_bus);
 			}
 			cpu_read = 0;
 			cpu_write = 0;
