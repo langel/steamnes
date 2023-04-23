@@ -37,6 +37,9 @@ void mbu_run() {
 			if ((cpu_bus & 0x3000) && !(cpu_bus & 0xc000)) {
 				(cpu_read) ? ppu_read_reg(cpu_bus) : ppu_write_reg(cpu_bus);
 			}
+			if (cpu_write & cpu_bus == 0x4014) {
+				ppu_oamdma();
+			}
 			cpu_read = 0;
 			cpu_write = 0;
 		}

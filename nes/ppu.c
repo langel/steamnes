@@ -39,6 +39,9 @@ void ppu_reset() {
 	}
 }
 
+void ppu_oamdma() {
+}
+
 void ppu_read_reg(int reg) {
 	reg &= 0x7;
 }
