@@ -17,6 +17,8 @@ int ppu_clock_div;
 int ppu_write;
 uint32_t ppu_dot_downcounter;
 
+uint8_t ppu_ctrl = 0;
+uint8_t ppu_mask = 0;
 uint8_t ppu_regs[8];
 uint16_t ppu_addr_bus;
 uint8_t ppu_data_bus;

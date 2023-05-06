@@ -27,7 +27,7 @@ uint8_t  cpu_s;  // stack pointer
 uint8_t  cpu_ph; // program counter high
 uint8_t  cpu_pl; // program counter low
 uint16_t cpu_pw; // program counter word
-uint8_t  cpu_cl; // program cycle downcounter before next
+uint16_t cpu_cl; // program cycle downcounter before next
 
 uint16_t cpu_alu;  // arithmetic logic unit
 uint16_t cpu_bus;  // current bus address
@@ -62,8 +62,8 @@ void cpu_reset() {
 #define cpu_addr_load_abx() { cpu_pw++; cpu_bus = cpu_addr[cpu_pw]; cpu_pw++; cpu_bus += (cpu_addr[cpu_pw] << 8) + cpu_x; cpu_pw++; }
 #define cpu_addr_load_aby() { cpu_pw++; cpu_bus = cpu_addr[cpu_pw]; cpu_pw++; cpu_bus += (cpu_addr[cpu_pw] << 8) + cpu_y; cpu_pw++; }
 #define cpu_addr_load_zpg() { cpu_pw++; cpu_bus = cpu_addr[cpu_pw]; cpu_pw++; }
-#define cpu_addr_load_zpx() { cpu_pw++; cpu_bus = cpu_addr[(cpu_pw + cpu_x) & 0xff]; cpu_pw++; }
-#define cpu_addr_load_zpy() { cpu_pw++; cpu_bus = cpu_addr[(cpu_pw + cpu_y) & 0xff]; cpu_pw++; }
+#define cpu_addr_load_zpx() { cpu_pw++; cpu_bus = (cpu_addr[cpu_pw] + cpu_x) & 0xff; cpu_pw++; }
+#define cpu_addr_load_zpy() { cpu_pw++; cpu_bus = (cpu_addr[cpu_pw] + cpu_y) & 0xff; cpu_pw++; }
 #define cpu_addr_load_idx() { cpu_pw++; cpu_bus = cpu_addr[(cpu_pw + cpu_x) & 0xff]; cpu_bus += cpu_addr[(cpu_pw + 1 + cpu_x) && 0xff] << 8; cpu_pw++; }
 #define cpu_addr_load_idy() { cpu_pw++; cpu_bus = cpu_addr[cpu_pw] + cpu_y; cpu_bus += cpu_addr[(cpu_pw + 1) & 0xff] << 8; cpu_pw++; }
 #define cpu_addr_load_ind() { cpu_pw++; cpu_bus = cpu_addr[cpu_pw]; cpu_pw++; cpu_bus += cpu_addr[cpu_pw] << 8; cpu_pw++; }
@@ -101,10 +101,10 @@ void cpu_reset() {
 #define txs_op() { cpu_s = cpu_x;                      cpu_pw++; cpu_cl = 2; }
 #define tya_op() { cpu_a = cpu_y; cpu_p_set_nz(cpu_a); cpu_pw++; cpu_cl = 2; }
 // decrementors and incrementors
-#define dec_pgz() { cpu_addr_load_zpx(); cpu_addr[cpu_bus]--; cpu_cl = 5; }
+#define dec_zpg() { cpu_addr_load_zpg(); cpu_addr[cpu_bus]--; cpu_p_set_nz(cpu_addr[cpu_bus]); cpu_write++; cpu_cl = 5; }
 #define dex_op()  { cpu_x--; cpu_p_set_nz(cpu_x); cpu_pw++; cpu_cl = 2; }
 #define dey_op()  { cpu_y--; cpu_p_set_nz(cpu_y); cpu_pw++; cpu_cl = 2; }
-#define inc_zpg() { cpu_addr_load_zpx(); cpu_addr[cpu_bus]++; cpu_p_set_nz(cpu_x); cpu_cl = 5; }
+#define inc_zpg() { cpu_addr_load_zpg(); cpu_addr[cpu_bus]++; cpu_p_set_nz(cpu_addr[cpu_bus]); cpu_write++; cpu_cl = 5; }
 #define inx_op()  { cpu_x++; cpu_p_set_nz(cpu_x); cpu_pw++; cpu_cl = 2; }
 #define iny_op()  { cpu_y++; cpu_p_set_nz(cpu_y); cpu_pw++; cpu_cl = 2; }
 #define asl_acc()  { cpu_op_asl(cpu_a); cpu_pw++; cpu_cl = 2; }
@@ -134,8 +134,8 @@ void cpu_reset() {
 #define jmp_ind() { cpu_addr_load_ind(); debug_out(3, "%x", cpu_bus); cpu_pw = cpu_addr[cpu_bus]; cpu_pw += cpu_addr[cpu_bus + 1] << 8;  cpu_cl = 5; }
 #define jsr_op()  { cpu_push((cpu_pw + 3) >> 8); cpu_push((cpu_pw + 3) & 0xff); cpu_addr_load_abs(); cpu_pw = cpu_bus; cpu_cl = 6; }
 #define nmi_op()  { cpu_push((cpu_pw) >> 8); cpu_push((cpu_pw) & 0xff); cpu_pw = cpu_addr_nmi; cpu_push(cpu_p); cpu_cl = 6; }
-#define rti_op()  { cpu_pull(cpu_p); cpu_pull(cpu_pw); cpu_pull(cpu_data); cpu_pw += (cpu_data << 8); cpu_cl = 6; }
-#define rts_op()  { cpu_pull(cpu_data); cpu_pw = cpu_data; cpu_pull(cpu_data); cpu_pw += cpu_data << 8; cpu_cl = 6; }
+#define rti_op()  { cpu_pull(cpu_p); cpu_pull(cpu_data); cpu_pw = cpu_data; cpu_pull(cpu_data); cpu_pw += (cpu_data << 8); cpu_cl = 6; }
+#define rts_op()  { cpu_pull(cpu_data); cpu_pw = cpu_data; cpu_pull(cpu_data); cpu_pw += (cpu_data << 8); cpu_cl = 6; }
 // comparers
 #define cmp_imm() { cpu_pw++; cpu_p &= ~cpu_fc; if (cpu_a >= cpu_addr[cpu_pw]) cpu_p |= cpu_fc; cpu_p_set_nz((cpu_a - cpu_addr[cpu_pw]) & 0xff); cpu_pw++; cpu_cl = 2; }
 #define cpx_imm() { cpu_pw++; cpu_p &= ~cpu_fc; if (cpu_x >= cpu_addr[cpu_pw]) cpu_p |= cpu_fc; cpu_p_set_nz((cpu_x - cpu_addr[cpu_pw]) & 0xff); cpu_pw++; cpu_cl = 2; }
@@ -167,7 +167,7 @@ void cpu_reset() {
 #define sta_zpg() { cpu_addr_load_zpg(); cpu_addr[cpu_bus] = cpu_a; cpu_write++; cpu_cl = 4; }
 #define stx_zpg() { cpu_addr_load_zpg(); cpu_addr[cpu_bus] = cpu_x; cpu_write++; cpu_cl = 4; }
 #define sty_zpg() { cpu_addr_load_zpg(); cpu_addr[cpu_bus] = cpu_y; cpu_write++; cpu_cl = 4; }
-#define sta_zpx() { cpu_addr_load_zpx(); cpu_addr[cpu_bus] = cpu_x; cpu_write++; cpu_cl = 4; }
+#define sta_zpx() { cpu_addr_load_zpx(); cpu_addr[cpu_bus] = cpu_a; cpu_write++; cpu_cl = 4; }
 
 void cpu_crash(int opcode, int timeout) {
 	if (opcode) {
@@ -192,6 +192,24 @@ void cpu_crash(int opcode, int timeout) {
 	debug_out(3, "PPU cycles: %d", ppu_cycle_count);
 	debug_out(3, "CLK cycles: %d", mbu_cycle_count);
 	debug_out(0, "NEFARIOUS CRASH EXIT");
+	for (int i = 0; i < 0x800; i += 16) {
+		if (i % 256 == 0) debug_out(3, "CPU RAM PAGE %2X", i >> 8);
+		debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 
+		cpu_addr[i], cpu_addr[i+1], cpu_addr[i+2], cpu_addr[i+3], cpu_addr[i+4], cpu_addr[i+5], cpu_addr[i+6], cpu_addr[i+7], cpu_addr[i+8],
+		cpu_addr[i+9], cpu_addr[i+10], cpu_addr[i+11], cpu_addr[i+12], cpu_addr[i+13], cpu_addr[i+14], cpu_addr[i+15]);
+	}
+	for (int i = 0; i < 0x400; i += 16) {
+		if (i % 256 == 0) debug_out(3, "PPU RAM PAGE %2X", i >> 8);
+		debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 
+		ppu_ram[i], ppu_ram[i+1], ppu_ram[i+2], ppu_ram[i+3], ppu_ram[i+4], ppu_ram[i+5], ppu_ram[i+6], ppu_ram[i+7], ppu_ram[i+8],
+		ppu_ram[i+9], ppu_ram[i+10], ppu_ram[i+11], ppu_ram[i+12], ppu_ram[i+13], ppu_ram[i+14], ppu_ram[i+15]);
+	}
+	for (int i = 0; i < 0x100; i += 16) {
+		if (i % 256 == 0) debug_out(3, "PPU OAM PAGE %2X", i >> 8);
+		debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 
+		ppu_oam[i], ppu_oam[i+1], ppu_oam[i+2], ppu_oam[i+3], ppu_oam[i+4], ppu_oam[i+5], ppu_oam[i+6], ppu_oam[i+7], ppu_oam[i+8],
+		ppu_oam[i+9], ppu_oam[i+10], ppu_oam[i+11], ppu_oam[i+12], ppu_oam[i+13], ppu_oam[i+14], ppu_oam[i+15]);
+	}
 	nes_running = 0;
 }
 
@@ -210,7 +228,13 @@ void cpu_cycle() {
 		cpu_cl--;
 		return;
 	}
-	if (cpu_cycle_count > 99999999) cpu_crash(0, cpu_cycle_count);
+	if (cpu_pw == 0xc068) {
+		debug_out(3, "NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI ");
+		debug_out(3, "0xZERO VALUE: 0x%2X", cpu_addr[0]);
+	}
+	if (cpu_pw == 0xc07F) debug_out(3, "OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE ");
+	if (cpu_pw == 0x0c07a) debug_out(3, "NMI JUMP TO STATE   %x", cpu_a);
+	if (cpu_cycle_count > 9999999) cpu_crash(0, cpu_cycle_count);
 	uint8_t opcode = cpu_addr[cpu_pw];
 	// DEBUG TOOLS & OPERATIONS
 //	debug_out(3, "%4x %2x %2x %2x", cpu_pw, opcode, cpu_addr[cpu_pw+1], cpu_addr[cpu_pw+2]); // basic code crawler
@@ -249,7 +273,7 @@ void cpu_cycle() {
 		case 0x9a: txs_op(); break;
 		case 0x98: tya_op(); break;
 		// decrementors and incrementors
-		case 0xc6: dec_pgz(); break;
+		case 0xc6: dec_zpg(); break;
 		case 0xca: dex_op();  break;
 		case 0x88: dey_op();  break;
 		case 0xe6: inc_zpg(); break;
