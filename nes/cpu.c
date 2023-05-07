@@ -65,7 +65,7 @@ void cpu_reset() {
 #define cpu_addr_load_zpx() { cpu_pw++; cpu_bus = (cpu_addr[cpu_pw] + cpu_x) & 0xff; cpu_pw++; }
 #define cpu_addr_load_zpy() { cpu_pw++; cpu_bus = (cpu_addr[cpu_pw] + cpu_y) & 0xff; cpu_pw++; }
 #define cpu_addr_load_idx() { cpu_pw++; cpu_bus = cpu_addr[(cpu_pw + cpu_x) & 0xff]; cpu_bus += cpu_addr[(cpu_pw + 1 + cpu_x) && 0xff] << 8; cpu_pw++; }
-#define cpu_addr_load_idy() { cpu_pw++; cpu_bus = cpu_addr[cpu_pw] + cpu_y; cpu_bus += cpu_addr[(cpu_pw + 1) & 0xff] << 8; cpu_pw++; }
+#define cpu_addr_load_idy() { cpu_pw++; cpu_bus = cpu_addr[cpu_addr[cpu_pw]] + cpu_y; cpu_bus += (cpu_addr[(cpu_addr[cpu_pw] + 1) & 0xff] << 8); cpu_pw++; }
 #define cpu_addr_load_ind() { cpu_pw++; cpu_bus = cpu_addr[cpu_pw]; cpu_pw++; cpu_bus += cpu_addr[cpu_pw] << 8; cpu_pw++; }
 #define cpu_branch(byte) { cpu_pw++; if (byte) { if (cpu_addr[cpu_pw] & 0x80) cpu_pw -= cpu_addr[cpu_pw] ^ 0xff; else cpu_pw += cpu_addr[cpu_pw] + 1; } else cpu_pw++; }
 #define cpu_op_bit(byte) { cpu_p = 0xff - (cpu_fn | cpu_fv | cpu_fz); if (byte & cpu_fn) cpu_p |= cpu_fn; if (byte & cpu_fv) cpu_p |= cpu_fv; if (!(byte & cpu_a)) cpu_p |= cpu_fz; }
@@ -78,6 +78,7 @@ void cpu_reset() {
 #define cpu_op_ora(byte) { cpu_a |= byte; cpu_p_set_nz(byte); }
 #define cpu_op_asl(byte) { if (byte & 0x80) cpu_p |= cpu_fc; else cpu_p &= ~cpu_fc; byte <<= 1; cpu_p_set_nz(byte); }
 #define cpu_op_lsr(byte) { if (byte & 0x01) cpu_p |= cpu_fc; else cpu_p &= ~cpu_fc; byte >>= 1; cpu_p_set_nz(byte); }
+#define cpu_op_rol(byte) { cpu_data = cpu_p; if (byte & 0x80) cpu_p |= cpu_fc; else cpu_p &= ~cpu_fc; byte <<= 1; if (cpu_data & cpu_fc) byte |= 0x01; cpu_p_set_nz(byte); }
 #define cpu_pull(byte) { cpu_s++; byte = cpu_addr[0x100 | cpu_s]; }
 #define cpu_push(byte) { cpu_addr[0x100 | cpu_s] = byte; cpu_s--; }
 
@@ -102,18 +103,24 @@ void cpu_reset() {
 #define tya_op() { cpu_a = cpu_y; cpu_p_set_nz(cpu_a); cpu_pw++; cpu_cl = 2; }
 // decrementors and incrementors
 #define dec_zpg() { cpu_addr_load_zpg(); cpu_addr[cpu_bus]--; cpu_p_set_nz(cpu_addr[cpu_bus]); cpu_write++; cpu_cl = 5; }
+#define dec_zpx() { cpu_addr_load_zpx(); cpu_addr[cpu_bus]--; cpu_p_set_nz(cpu_addr[cpu_bus]); cpu_write++; cpu_cl = 6; }
 #define dex_op()  { cpu_x--; cpu_p_set_nz(cpu_x); cpu_pw++; cpu_cl = 2; }
 #define dey_op()  { cpu_y--; cpu_p_set_nz(cpu_y); cpu_pw++; cpu_cl = 2; }
 #define inc_zpg() { cpu_addr_load_zpg(); cpu_addr[cpu_bus]++; cpu_p_set_nz(cpu_addr[cpu_bus]); cpu_write++; cpu_cl = 5; }
 #define inx_op()  { cpu_x++; cpu_p_set_nz(cpu_x); cpu_pw++; cpu_cl = 2; }
 #define iny_op()  { cpu_y++; cpu_p_set_nz(cpu_y); cpu_pw++; cpu_cl = 2; }
-#define asl_acc()  { cpu_op_asl(cpu_a); cpu_pw++; cpu_cl = 2; }
-#define lsr_acc()  { cpu_op_lsr(cpu_a); cpu_pw++; cpu_cl = 2; }
+#define asl_acc() { cpu_op_asl(cpu_a); cpu_pw++; cpu_cl = 2; }
+#define lsr_acc() { cpu_op_lsr(cpu_a); cpu_pw++; cpu_cl = 2; }
+#define rol_zpg() { cpu_addr_load_zpg(); cpu_op_rol(cpu_addr[cpu_bus]); cpu_write++; cpu_cl = 5; }
 // maths
 #define adc_imm() { cpu_pw++; cpu_op_adc(cpu_addr[cpu_pw]); cpu_pw++; cpu_cl = 2; }
+#define adc_zpg() { cpu_addr_load_zpg(); cpu_op_adc(cpu_addr[cpu_bus]); cpu_cl = 3; }
 #define sbc_imm() { cpu_pw++; cpu_op_sbc(cpu_addr[cpu_pw]); cpu_pw++; cpu_cl = 2; }
 #define sbc_zpg() { cpu_addr_load_zpg(); cpu_op_sbc(cpu_addr[cpu_bus]); cpu_cl = 3; }
 #define and_imm() { cpu_pw++; cpu_op_and(cpu_addr[cpu_pw]); cpu_pw++; cpu_cl = 2; }
+#define and_zpg() { cpu_addr_load_zpg(); cpu_op_and(cpu_addr[cpu_bus]); cpu_cl = 3; }
+#define eor_imm() { cpu_pw++; cpu_op_eor(cpu_addr[cpu_pw]); cpu_pw++; cpu_cl = 2; }
+#define eor_zpg() { cpu_addr_load_zpg(); cpu_op_eor(cpu_addr[cpu_pw]); cpu_cl = 3; }
 #define ora_imm() { cpu_pw++; cpu_op_ora(cpu_addr[cpu_pw]); cpu_pw++; cpu_cl = 2; }
 #define ora_zpg() { cpu_addr_load_zpg(); cpu_op_ora(cpu_addr[cpu_bus]); cpu_cl = 3; }
 #define ora_zpx() { cpu_addr_load_zpx(); cpu_op_ora(cpu_addr[cpu_bus]); cpu_cl = 4; }
@@ -125,22 +132,25 @@ void cpu_reset() {
 // weirdos
 #define bit_abs() { cpu_addr_load_abs(); cpu_op_bit(cpu_addr[cpu_bus]); cpu_cl = 4; }
 // branchers
+#define bcc_op()  { cpu_branch(!(cpu_p & cpu_fc)); cpu_cl = 4; }
 #define bcs_op()  { cpu_branch(cpu_p & cpu_fc); cpu_cl = 4; }
 #define beq_op()  { cpu_branch(cpu_p & cpu_fz); cpu_cl = 4; }
 #define bmi_op()  { cpu_branch(cpu_p & cpu_fn); cpu_cl = 4; }
 #define bne_op()  { cpu_branch(!(cpu_p & cpu_fz)); cpu_cl = 4; }
 #define bpl_op()  { cpu_branch(!(cpu_p & cpu_fn)); cpu_cl = 4; }
 #define jmp_abs() { cpu_addr_load_abs(); cpu_pw = cpu_bus; cpu_cl = 3; }
-#define jmp_ind() { cpu_addr_load_ind(); debug_out(3, "%x", cpu_bus); cpu_pw = cpu_addr[cpu_bus]; cpu_pw += cpu_addr[cpu_bus + 1] << 8;  cpu_cl = 5; }
+#define jmp_ind() { cpu_addr_load_ind(); cpu_pw = cpu_addr[cpu_bus]; cpu_pw += cpu_addr[cpu_bus + 1] << 8;  cpu_cl = 5; }
 #define jsr_op()  { cpu_push((cpu_pw + 3) >> 8); cpu_push((cpu_pw + 3) & 0xff); cpu_addr_load_abs(); cpu_pw = cpu_bus; cpu_cl = 6; }
 #define nmi_op()  { cpu_push((cpu_pw) >> 8); cpu_push((cpu_pw) & 0xff); cpu_pw = cpu_addr_nmi; cpu_push(cpu_p); cpu_cl = 6; }
 #define rti_op()  { cpu_pull(cpu_p); cpu_pull(cpu_data); cpu_pw = cpu_data; cpu_pull(cpu_data); cpu_pw += (cpu_data << 8); cpu_cl = 6; }
 #define rts_op()  { cpu_pull(cpu_data); cpu_pw = cpu_data; cpu_pull(cpu_data); cpu_pw += (cpu_data << 8); cpu_cl = 6; }
 // comparers
 #define cmp_imm() { cpu_pw++; cpu_p &= ~cpu_fc; if (cpu_a >= cpu_addr[cpu_pw]) cpu_p |= cpu_fc; cpu_p_set_nz((cpu_a - cpu_addr[cpu_pw]) & 0xff); cpu_pw++; cpu_cl = 2; }
+#define cmp_zpg() { cpu_addr_load_zpg(); cpu_p &= ~cpu_fc; if (cpu_a >= cpu_addr[cpu_bus]) cpu_p |= cpu_fc; cpu_p_set_nz((cpu_a - cpu_addr[cpu_bus]) & 0xff); cpu_cl = 3; }
+#define cmp_zpx() { cpu_addr_load_zpx(); cpu_p &= ~cpu_fc; if (cpu_a >= cpu_addr[cpu_bus]) cpu_p |= cpu_fc; cpu_p_set_nz((cpu_a - cpu_addr[cpu_bus]) & 0xff); cpu_cl = 4; }
 #define cpx_imm() { cpu_pw++; cpu_p &= ~cpu_fc; if (cpu_x >= cpu_addr[cpu_pw]) cpu_p |= cpu_fc; cpu_p_set_nz((cpu_x - cpu_addr[cpu_pw]) & 0xff); cpu_pw++; cpu_cl = 2; }
 #define cpy_imm() { cpu_pw++; cpu_p &= ~cpu_fc; if (cpu_y >= cpu_addr[cpu_pw]) cpu_p |= cpu_fc; cpu_p_set_nz((cpu_y - cpu_addr[cpu_pw]) & 0xff); cpu_pw++; cpu_cl = 2; }
-#define cmp_zpg() { cpu_addr_load_zpg(); cpu_p &= ~cpu_fc; if (cpu_a >= cpu_addr[cpu_bus]) cpu_p |= cpu_fc; cpu_p_set_nz((cpu_a - cpu_addr[cpu_bus]) & 0xff); cpu_cl = 3; }
+#define cpy_zpg() { cpu_addr_load_zpg(); cpu_p &= ~cpu_fc; if (cpu_y >= cpu_addr[cpu_bus]) cpu_p |= cpu_fc; cpu_p_set_nz((cpu_y - cpu_addr[cpu_bus]) & 0xff); cpu_cl = 3; }
 // loaders
 #define lda_imm() { cpu_pw++; cpu_a = cpu_addr[cpu_pw]; cpu_p_set_nz(cpu_x); cpu_pw++; cpu_read++; cpu_cl = 2; }
 #define lda_zpg() { cpu_addr_load_zpg(); cpu_a = cpu_addr[cpu_bus]; cpu_p_set_nz(cpu_a); cpu_read++; cpu_cl = 4; }
@@ -192,18 +202,21 @@ void cpu_crash(int opcode, int timeout) {
 	debug_out(3, "PPU cycles: %d", ppu_cycle_count);
 	debug_out(3, "CLK cycles: %d", mbu_cycle_count);
 	debug_out(0, "NEFARIOUS CRASH EXIT");
-	for (int i = 0; i < 0x800; i += 16) {
+	// 0x800 covers 2kb of RAM
+	for (int i = 0; i < 0x200; i += 16) {
 		if (i % 256 == 0) debug_out(3, "CPU RAM PAGE %2X", i >> 8);
 		debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 
 		cpu_addr[i], cpu_addr[i+1], cpu_addr[i+2], cpu_addr[i+3], cpu_addr[i+4], cpu_addr[i+5], cpu_addr[i+6], cpu_addr[i+7], cpu_addr[i+8],
 		cpu_addr[i+9], cpu_addr[i+10], cpu_addr[i+11], cpu_addr[i+12], cpu_addr[i+13], cpu_addr[i+14], cpu_addr[i+15]);
 	}
+	/*
 	for (int i = 0; i < 0x400; i += 16) {
 		if (i % 256 == 0) debug_out(3, "PPU RAM PAGE %2X", i >> 8);
 		debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 
 		ppu_ram[i], ppu_ram[i+1], ppu_ram[i+2], ppu_ram[i+3], ppu_ram[i+4], ppu_ram[i+5], ppu_ram[i+6], ppu_ram[i+7], ppu_ram[i+8],
 		ppu_ram[i+9], ppu_ram[i+10], ppu_ram[i+11], ppu_ram[i+12], ppu_ram[i+13], ppu_ram[i+14], ppu_ram[i+15]);
 	}
+	*/
 	for (int i = 0; i < 0x100; i += 16) {
 		if (i % 256 == 0) debug_out(3, "PPU OAM PAGE %2X", i >> 8);
 		debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 
@@ -234,6 +247,7 @@ void cpu_cycle() {
 	}
 	if (cpu_pw == 0xc07F) debug_out(3, "OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE ");
 	if (cpu_pw == 0x0c07a) debug_out(3, "NMI JUMP TO STATE   %x", cpu_a);
+//	if (cpu_pw == 0xc1d5) cpu_crash(0, 0);;
 	if (cpu_cycle_count > 9999999) cpu_crash(0, cpu_cycle_count);
 	uint8_t opcode = cpu_addr[cpu_pw];
 	// DEBUG TOOLS & OPERATIONS
@@ -274,6 +288,7 @@ void cpu_cycle() {
 		case 0x98: tya_op(); break;
 		// decrementors and incrementors
 		case 0xc6: dec_zpg(); break;
+		case 0xd6: dec_zpx(); break;
 		case 0xca: dex_op();  break;
 		case 0x88: dey_op();  break;
 		case 0xe6: inc_zpg(); break;
@@ -281,11 +296,16 @@ void cpu_cycle() {
 		case 0xc8: iny_op();  break;
 		case 0x0a: asl_acc(); break;
 		case 0x4a: lsr_acc(); break;
+		case 0x26: rol_zpg(); break;
 		// maths
 		case 0x69: adc_imm(); break;
+		case 0x65: adc_zpg(); break;
 		case 0xe9: sbc_imm(); break;
 		case 0xe5: sbc_zpg(); break;
 		case 0x29: and_imm(); break;
+		case 0x25: and_zpg(); break;
+		case 0x49: eor_imm(); break;
+		case 0x45: eor_zpg(); break;
 		case 0x09: ora_imm(); break;
 		case 0x05: ora_zpg(); break;
 		case 0x15: ora_zpx(); break;
@@ -297,6 +317,7 @@ void cpu_cycle() {
 		// weirdos
 		case 0x2c: bit_abs(); break;
 		// branchers
+		case 0x90: bcc_op();  break;
 		case 0xb0: bcs_op();  break;
 		case 0xf0: beq_op();  break;
 		case 0x30: bmi_op();  break;
@@ -309,9 +330,11 @@ void cpu_cycle() {
 		case 0x60: rts_op();  break;
 		// comparers
 		case 0xc9: cmp_imm(); break;
+		case 0xc5: cmp_zpg(); break;
+		case 0xd5: cmp_zpx(); break;
 		case 0xe0: cpx_imm(); break;
 		case 0xc0: cpy_imm(); break;
-		case 0xc5: cmp_zpg(); break;
+		case 0xc4: cpy_zpg(); break;
 		// loaders
 		case 0xa9: lda_imm(); break;
 		case 0xa5: lda_zpg(); break;

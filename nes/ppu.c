@@ -57,6 +57,7 @@ void ppu_dot() {
 		//ppu_dot_count = 0;
 		ppu_frames++;
 		nes_nmi++;
+		//debug_out(3, "ppu trigger nmi %dx", nes_nmi);
 	}
 	ppu_dot_downcounter--;
 	ppu_dot_count++;

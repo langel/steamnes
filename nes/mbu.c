@@ -28,6 +28,7 @@ void mbu_run() {
 		apu_clock();
 		if (!cpu_countdowner) {
 			cpu_countdowner = cpu_clock_div;
+//			if (nes_nmi) debug_out(3, "nmi troubles");
 			if (nes_nmi && (ppu_ctrl & 0x80)) cpu_nmi();
 			else if (nes_irq) cpu_irq();
 			else cpu_cycle();
@@ -58,7 +59,7 @@ void mbu_run() {
 			}
 			// OAMDMA
 			if (cpu_write && (cpu_bus == 0x4014)) {
-				memcpy(&ppu_oam, &cpu_addr + (cpu_data << 8), 0x100);
+				memcpy(&ppu_oam, &cpu_addr[cpu_a << 8], 0x100);
 				cpu_cl = 513;
 				debug_out(3, "oam dma");
 			}
