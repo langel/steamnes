@@ -130,7 +130,7 @@ void cpu_reset() {
 #define ora_idx() { cpu_addr_load_idx(); cpu_op_ora(cpu_addr[cpu_bus]); cpu_cl = 6; }
 #define ora_idy() { cpu_addr_load_idy(); cpu_op_ora(cpu_addr[cpu_bus]); cpu_cl = 6; }
 // weirdos
-#define bit_abs() { cpu_addr_load_abs(); cpu_op_bit(cpu_addr[cpu_bus]); cpu_cl = 4; }
+#define bit_abs() { cpu_addr_load_abs(); cpu_op_bit(cpu_addr[cpu_bus]); cpu_read++; cpu_cl = 4; }
 // branchers
 #define bcc_op()  { cpu_branch(!(cpu_p & cpu_fc)); cpu_cl = 4; }
 #define bcs_op()  { cpu_branch(cpu_p & cpu_fc); cpu_cl = 4; }
@@ -202,27 +202,6 @@ void cpu_crash(int opcode, int timeout) {
 	debug_out(3, "PPU cycles: %d", ppu_cycle_count);
 	debug_out(3, "CLK cycles: %d", mbu_cycle_count);
 	debug_out(0, "NEFARIOUS CRASH EXIT");
-	// 0x800 covers 2kb of RAM
-	for (int i = 0; i < 0x200; i += 16) {
-		if (i % 256 == 0) debug_out(3, "CPU RAM PAGE %2X", i >> 8);
-		debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 
-		cpu_addr[i], cpu_addr[i+1], cpu_addr[i+2], cpu_addr[i+3], cpu_addr[i+4], cpu_addr[i+5], cpu_addr[i+6], cpu_addr[i+7], cpu_addr[i+8],
-		cpu_addr[i+9], cpu_addr[i+10], cpu_addr[i+11], cpu_addr[i+12], cpu_addr[i+13], cpu_addr[i+14], cpu_addr[i+15]);
-	}
-	/*
-	for (int i = 0; i < 0x400; i += 16) {
-		if (i % 256 == 0) debug_out(3, "PPU RAM PAGE %2X", i >> 8);
-		debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 
-		ppu_ram[i], ppu_ram[i+1], ppu_ram[i+2], ppu_ram[i+3], ppu_ram[i+4], ppu_ram[i+5], ppu_ram[i+6], ppu_ram[i+7], ppu_ram[i+8],
-		ppu_ram[i+9], ppu_ram[i+10], ppu_ram[i+11], ppu_ram[i+12], ppu_ram[i+13], ppu_ram[i+14], ppu_ram[i+15]);
-	}
-	*/
-	for (int i = 0; i < 0x100; i += 16) {
-		if (i % 256 == 0) debug_out(3, "PPU OAM PAGE %2X", i >> 8);
-		debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 
-		ppu_oam[i], ppu_oam[i+1], ppu_oam[i+2], ppu_oam[i+3], ppu_oam[i+4], ppu_oam[i+5], ppu_oam[i+6], ppu_oam[i+7], ppu_oam[i+8],
-		ppu_oam[i+9], ppu_oam[i+10], ppu_oam[i+11], ppu_oam[i+12], ppu_oam[i+13], ppu_oam[i+14], ppu_oam[i+15]);
-	}
 	nes_running = 0;
 }
 
@@ -241,11 +220,8 @@ void cpu_cycle() {
 		cpu_cl--;
 		return;
 	}
-	if (cpu_pw == 0xc068) {
-		debug_out(3, "NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI NMI ");
-		debug_out(3, "0xZERO VALUE: 0x%2X", cpu_addr[0]);
-	}
-	if (cpu_pw == 0xc07F) debug_out(3, "OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE  OAMDMA WRITE ");
+	if (cpu_pw == 0xc068) debug_out(3, "NMI NMI NMI 0xZERO VALUE: 0x%2X", cpu_addr[0]);
+	if (cpu_pw == 0xc07F) debug_out(3, "OAMDMA WRITE  OAMDMA WRITE OAMDMA WRITE ");
 	if (cpu_pw == 0x0c07a) debug_out(3, "NMI JUMP TO STATE   %x", cpu_a);
 //	if (cpu_pw == 0xc1d5) cpu_crash(0, 0);;
 	if (cpu_cycle_count > 9999999) cpu_crash(0, cpu_cycle_count);

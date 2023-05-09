@@ -33,19 +33,19 @@ void mbu_run() {
 			else if (nes_irq) cpu_irq();
 			else cpu_cycle();
 		}
-		if (cpu_write && cpu_bus == 0) {
-			debug_out(3, "WRITE TO ZERO at 0x%4X", cpu_pw);
-		}
 		if (cpu_write && cpu_bus == 0x55) {
 			debug_out(3, "WRITE TO state-render-addr 0x%2X at 0x%4X", cpu_a, cpu_pw);
-		}
-		if (cpu_write && cpu_bus == 0x86) {
-			debug_out(3, "WRITE TO TEMP00 0x%2X at 0x%4X", cpu_data, cpu_pw);
 		}
 		//if (cpu_pw == 0xc65a) nes_running = 0;
 		//if (cpu_pw == 0xc14b) cpu_crash(0xff, 0);
 		//if (cpu_pw == 0xc666) nes_running = 0;
 		if (cpu_read | cpu_write) {
+			if (cpu_bus = 0x2002) {
+
+			}
+			cpu_read = 0;
+		}
+		if (cpu_write) {
 			//if (cpu_read) debug_out(3, "cpu r  0x%4x", cpu_bus);
 			//if (cpu_write) debug_out(3, "cpu w  0x%4x", cpu_bus);
 			mbu_data_bus = cpu_addr[cpu_bus];
@@ -54,16 +54,17 @@ void mbu_run() {
 				debug_out(3, "PPU_CTRL SET: 0x%2X @ 0x%4x", ppu_ctrl, cpu_pw);
 			}
 			if (cpu_bus == 0x2001) ppu_mask = cpu_a;
+			/*
 			if ((cpu_bus & 0x3000) && !(cpu_bus & 0xc000)) {
 				(cpu_read) ? ppu_read_reg(cpu_bus) : ppu_write_reg(cpu_bus);
 			}
+			*/
 			// OAMDMA
-			if (cpu_write && (cpu_bus == 0x4014)) {
+			if (cpu_bus == 0x4014) {
 				memcpy(&ppu_oam, &cpu_addr[cpu_a << 8], 0x100);
 				cpu_cl = 513;
 				debug_out(3, "oam dma");
 			}
-			cpu_read = 0;
 			cpu_write = 0;
 		}
 		if (!ppu_countdowner) {
@@ -76,6 +77,29 @@ void mbu_run() {
 		cpu_countdowner--;
 		ppu_countdowner--;
 		mbu_cycle_count++;
-		if (!nes_running) return;
+		if (!nes_running) {
+			// 0x800 covers 2kb of RAM
+			for (int i = 0; i < 0x200; i += 16) {
+				if (i % 256 == 0) debug_out(3, "CPU RAM PAGE %2X", i >> 8);
+				debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 
+				cpu_addr[i], cpu_addr[i+1], cpu_addr[i+2], cpu_addr[i+3], cpu_addr[i+4], cpu_addr[i+5], cpu_addr[i+6], cpu_addr[i+7], cpu_addr[i+8],
+				cpu_addr[i+9], cpu_addr[i+10], cpu_addr[i+11], cpu_addr[i+12], cpu_addr[i+13], cpu_addr[i+14], cpu_addr[i+15]);
+			}
+			/*
+			for (int i = 0; i < 0x400; i += 16) {
+				if (i % 256 == 0) debug_out(3, "PPU RAM PAGE %2X", i >> 8);
+				debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 
+				ppu_ram[i], ppu_ram[i+1], ppu_ram[i+2], ppu_ram[i+3], ppu_ram[i+4], ppu_ram[i+5], ppu_ram[i+6], ppu_ram[i+7], ppu_ram[i+8],
+				ppu_ram[i+9], ppu_ram[i+10], ppu_ram[i+11], ppu_ram[i+12], ppu_ram[i+13], ppu_ram[i+14], ppu_ram[i+15]);
+			}
+			*/
+			for (int i = 0; i < 0x100; i += 16) {
+				if (i % 256 == 0) debug_out(3, "PPU OAM PAGE %2X", i >> 8);
+				debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 
+				ppu_oam[i], ppu_oam[i+1], ppu_oam[i+2], ppu_oam[i+3], ppu_oam[i+4], ppu_oam[i+5], ppu_oam[i+6], ppu_oam[i+7], ppu_oam[i+8],
+				ppu_oam[i+9], ppu_oam[i+10], ppu_oam[i+11], ppu_oam[i+12], ppu_oam[i+13], ppu_oam[i+14], ppu_oam[i+15]);
+			}
+			return;
+		}
 	}
 }
