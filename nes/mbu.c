@@ -34,14 +34,16 @@ void mbu_run() {
 			else cpu_cycle();
 		}
 		if (cpu_write && cpu_bus == 0x55) {
-			debug_out(3, "WRITE TO state-render-addr 0x%2X at 0x%4X", cpu_a, cpu_pw);
+//			debug_out(3, "WRITE TO state-render-addr 0x%2X at 0x%4X", cpu_a, cpu_pw);
 		}
 		//if (cpu_pw == 0xc65a) nes_running = 0;
 		//if (cpu_pw == 0xc14b) cpu_crash(0xff, 0);
 		//if (cpu_pw == 0xc666) nes_running = 0;
-		if (cpu_read | cpu_write) {
+		if (cpu_read) {
 			if (cpu_bus = 0x2002) {
-
+				// clear vblank bit flag
+				ppu_status &= ~0x80;
+				cpu_addr[0x2002] = ppu_status;
 			}
 			cpu_read = 0;
 		}
@@ -51,7 +53,7 @@ void mbu_run() {
 			mbu_data_bus = cpu_addr[cpu_bus];
 			if (cpu_bus == 0x2000) {
 				ppu_ctrl = cpu_a;
-				debug_out(3, "PPU_CTRL SET: 0x%2X @ 0x%4x", ppu_ctrl, cpu_pw);
+				//debug_out(3, "PPU_CTRL SET: 0x%2X @ 0x%4x", ppu_ctrl, cpu_pw);
 			}
 			if (cpu_bus == 0x2001) ppu_mask = cpu_a;
 			/*
@@ -63,17 +65,21 @@ void mbu_run() {
 			if (cpu_bus == 0x4014) {
 				memcpy(&ppu_oam, &cpu_addr[cpu_a << 8], 0x100);
 				cpu_cl = 513;
-				debug_out(3, "oam dma");
+				//debug_out(3, "oam dma");
 			}
 			cpu_write = 0;
 		}
 		if (!ppu_countdowner) {
 			ppu_countdowner = ppu_clock_div;
 			ppu_dot();
+			if (nes_nmi) {
+				// set vblank bit flag
+				ppu_status |= 0x80;
+				cpu_addr[0x2002] = ppu_status;
+			}
 		}
 		if (ppu_write) {
 		}
-		//cpu_nmi = ppu_int;
 		cpu_countdowner--;
 		ppu_countdowner--;
 		mbu_cycle_count++;

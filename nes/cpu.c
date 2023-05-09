@@ -220,9 +220,9 @@ void cpu_cycle() {
 		cpu_cl--;
 		return;
 	}
-	if (cpu_pw == 0xc068) debug_out(3, "NMI NMI NMI 0xZERO VALUE: 0x%2X", cpu_addr[0]);
-	if (cpu_pw == 0xc07F) debug_out(3, "OAMDMA WRITE  OAMDMA WRITE OAMDMA WRITE ");
-	if (cpu_pw == 0x0c07a) debug_out(3, "NMI JUMP TO STATE   %x", cpu_a);
+//	if (cpu_pw == 0xc068) debug_out(3, "NMI NMI NMI 0xZERO VALUE: 0x%2X", cpu_addr[0]);
+//	if (cpu_pw == 0xc07F) debug_out(3, "OAMDMA WRITE  OAMDMA WRITE OAMDMA WRITE ");
+//	if (cpu_pw == 0x0c07a) debug_out(3, "NMI JUMP TO STATE   %x", cpu_a);
 //	if (cpu_pw == 0xc1d5) cpu_crash(0, 0);;
 	if (cpu_cycle_count > 9999999) cpu_crash(0, cpu_cycle_count);
 	uint8_t opcode = cpu_addr[cpu_pw];
