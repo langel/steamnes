@@ -40,7 +40,7 @@ void mbu_run() {
 		//if (cpu_pw == 0xc14b) cpu_crash(0xff, 0);
 		//if (cpu_pw == 0xc666) nes_running = 0;
 		if (cpu_read) {
-			if (cpu_bus = 0x2002) {
+			if (cpu_bus == 0x2002) {
 				// clear vblank bit flag
 				ppu_status &= ~0x80;
 				cpu_addr[0x2002] = ppu_status;
