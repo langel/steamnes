@@ -133,11 +133,13 @@ void cpu_reset() {
 #define bit_abs() { cpu_addr_load_abs(); cpu_op_bit(cpu_addr[cpu_bus]); cpu_read++; cpu_cl = 4; }
 // branchers
 #define bcc_op()  { cpu_branch(!(cpu_p & cpu_fc)); cpu_cl = 4; }
-#define bcs_op()  { cpu_branch(cpu_p & cpu_fc); cpu_cl = 4; }
-#define beq_op()  { cpu_branch(cpu_p & cpu_fz); cpu_cl = 4; }
-#define bmi_op()  { cpu_branch(cpu_p & cpu_fn); cpu_cl = 4; }
+#define bcs_op()  { cpu_branch(  cpu_p & cpu_fc);  cpu_cl = 4; }
+#define beq_op()  { cpu_branch(  cpu_p & cpu_fz);  cpu_cl = 4; }
+#define bmi_op()  { cpu_branch(  cpu_p & cpu_fn);  cpu_cl = 4; }
 #define bne_op()  { cpu_branch(!(cpu_p & cpu_fz)); cpu_cl = 4; }
 #define bpl_op()  { cpu_branch(!(cpu_p & cpu_fn)); cpu_cl = 4; }
+#define bvc_op()  { cpu_branch(!(cpu_p & cpu_fv)); cpu_cl = 4; }
+#define bvs_op()  { cpu_branch(  cpu_p & cpu_fv);  cpu_cl = 4; }
 #define jmp_abs() { cpu_addr_load_abs(); cpu_pw = cpu_bus; cpu_cl = 3; }
 #define jmp_ind() { cpu_addr_load_ind(); cpu_pw = cpu_addr[cpu_bus]; cpu_pw += cpu_addr[cpu_bus + 1] << 8;  cpu_cl = 5; }
 #define jsr_op()  { cpu_push((cpu_pw + 3) >> 8); cpu_push((cpu_pw + 3) & 0xff); cpu_addr_load_abs(); cpu_pw = cpu_bus; cpu_cl = 6; }
@@ -299,6 +301,8 @@ void cpu_cycle() {
 		case 0x30: bmi_op();  break;
 		case 0xd0: bne_op();  break;
 		case 0x10: bpl_op();  break;
+		case 0x50: bvc_op();  break;
+		case 0x70: bvs_op();  break;
 		case 0x4c: jmp_abs(); break;
 		case 0x6c: jmp_ind(); break;
 		case 0x20: jsr_op();  break;
