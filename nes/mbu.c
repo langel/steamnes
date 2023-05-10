@@ -72,11 +72,7 @@ void mbu_run() {
 		if (!ppu_countdowner) {
 			ppu_countdowner = ppu_clock_div;
 			ppu_dot();
-			if (nes_nmi) {
-				// set vblank bit flag
-				ppu_status |= 0x80;
-				cpu_addr[0x2002] = ppu_status;
-			}
+			cpu_addr[0x2002] = ppu_status;
 		}
 		if (ppu_write) {
 		}
@@ -91,14 +87,13 @@ void mbu_run() {
 				cpu_addr[i], cpu_addr[i+1], cpu_addr[i+2], cpu_addr[i+3], cpu_addr[i+4], cpu_addr[i+5], cpu_addr[i+6], cpu_addr[i+7], cpu_addr[i+8],
 				cpu_addr[i+9], cpu_addr[i+10], cpu_addr[i+11], cpu_addr[i+12], cpu_addr[i+13], cpu_addr[i+14], cpu_addr[i+15]);
 			}
-			/*
-			for (int i = 0; i < 0x400; i += 16) {
+			// 0x4000 is entire PPU addr
+			for (int i = 0x2000; i < 0x2100; i += 16) {
 				if (i % 256 == 0) debug_out(3, "PPU RAM PAGE %2X", i >> 8);
 				debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 
-				ppu_ram[i], ppu_ram[i+1], ppu_ram[i+2], ppu_ram[i+3], ppu_ram[i+4], ppu_ram[i+5], ppu_ram[i+6], ppu_ram[i+7], ppu_ram[i+8],
-				ppu_ram[i+9], ppu_ram[i+10], ppu_ram[i+11], ppu_ram[i+12], ppu_ram[i+13], ppu_ram[i+14], ppu_ram[i+15]);
+				ppu_addr[i], ppu_addr[i+1], ppu_addr[i+2], ppu_addr[i+3], ppu_addr[i+4], ppu_addr[i+5], ppu_addr[i+6], ppu_addr[i+7], ppu_addr[i+8],
+				ppu_addr[i+9], ppu_addr[i+10], ppu_addr[i+11], ppu_addr[i+12], ppu_addr[i+13], ppu_addr[i+14], ppu_addr[i+15]);
 			}
-			*/
 			for (int i = 0; i < 0x100; i += 16) {
 				if (i % 256 == 0) debug_out(3, "PPU OAM PAGE %2X", i >> 8);
 				debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 

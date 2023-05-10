@@ -202,6 +202,7 @@ void cpu_crash(int opcode, int timeout) {
 	);
 	debug_out(3, "CPU cycles: %d", cpu_cycle_count);
 	debug_out(3, "PPU cycles: %d", ppu_cycle_count);
+	debug_out(3, "PPU frames: %d", ppu_frame_count);
 	debug_out(3, "CLK cycles: %d", mbu_cycle_count);
 	debug_out(0, "NEFARIOUS CRASH EXIT");
 	nes_running = 0;

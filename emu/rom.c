@@ -88,11 +88,13 @@ int rom_load(char* filename) {
 			if (rom_prg_size >> 14 == 1) {
 				debug_out(3, "Mapper %i NROM-128", rom_mapper);
 				memcpy(cpu_addr + 0xc000, rom_prg_data, rom_prg_size);
+				memcpy(ppu_addr, rom_chr_data, rom_chr_size);
 			}
 			// NROM256
 			else {
 				debug_out(3, "Mapper %i NROM-256", rom_mapper);
-				memcpy(cpu_addr, rom_prg_data, rom_prg_size);
+				memcpy(cpu_addr + 0x8000, rom_prg_data, rom_prg_size);
+				memcpy(ppu_addr, rom_chr_data, rom_chr_size);
 			}
 			break;
 		default:
