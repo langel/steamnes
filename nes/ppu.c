@@ -20,7 +20,9 @@ uint8_t  ppu_mask = 0;
 uint8_t  ppu_status = 0;
 uint16_t ppu_scanline = 0;
 uint16_t ppu_scan_dot = 0;
+uint16_t ppu_pw;
 uint16_t ppu_addr_bus;
+uint8_t  ppu_addr_latch;
 uint8_t  ppu_data_bus;
 
 

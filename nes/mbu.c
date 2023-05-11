@@ -43,7 +43,15 @@ void mbu_run() {
 			if (cpu_bus == 0x2002) {
 				// clear vblank bit flag
 				ppu_status &= ~0x80;
+				// clear addr latch
+				ppu_addr_latch = 0;
 				cpu_addr[0x2002] = ppu_status;
+			}
+			// PPU DATA OUT
+			if (cpu_bus == 0x2007) {
+				// ...uh how does this get into the cpu afterwards?
+				//ppu_addr[ppu_pw] = cpu_addr[0x2007];
+				ppu_pw += (ppu_ctrl & 0x04) ? 0x20 : 0x01;
 			}
 			cpu_read = 0;
 		}
@@ -51,11 +59,28 @@ void mbu_run() {
 			//if (cpu_read) debug_out(3, "cpu r  0x%4x", cpu_bus);
 			//if (cpu_write) debug_out(3, "cpu w  0x%4x", cpu_bus);
 			mbu_data_bus = cpu_addr[cpu_bus];
+			// PPU CTRL
 			if (cpu_bus == 0x2000) {
-				ppu_ctrl = cpu_a;
+				ppu_ctrl = cpu_addr[0x2000];
 				//debug_out(3, "PPU_CTRL SET: 0x%2X @ 0x%4x", ppu_ctrl, cpu_pw);
 			}
+			// PPU MASK
 			if (cpu_bus == 0x2001) ppu_mask = cpu_a;
+			// PPU ADDR
+			if (cpu_bus == 0x2006) {
+				if (ppu_addr_latch % 1 == 0) {
+					ppu_pw = (ppu_pw & 0xff) + (cpu_addr[0x2006] << 8);
+				}
+				else {
+					ppu_pw = (ppu_pw & 0xff00) + cpu_addr[0x2006];
+				}
+				ppu_addr_latch++;
+			}
+			// PPU DATA IN
+			if (cpu_bus == 0x2007) {
+				ppu_addr[ppu_pw] = cpu_addr[0x2007];
+				ppu_pw += (ppu_ctrl & 0x04) ? 0x20 : 0x01;
+			}
 			/*
 			if ((cpu_bus & 0x3000) && !(cpu_bus & 0xc000)) {
 				(cpu_read) ? ppu_read_reg(cpu_bus) : ppu_write_reg(cpu_bus);
