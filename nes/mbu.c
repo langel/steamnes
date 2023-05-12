@@ -68,13 +68,14 @@ void mbu_run() {
 			if (cpu_bus == 0x2001) ppu_mask = cpu_a;
 			// PPU ADDR
 			if (cpu_bus == 0x2006) {
-				if (ppu_addr_latch % 1 == 0) {
+				if (ppu_addr_latch == 0) {
 					ppu_pw = (ppu_pw & 0xff) + (cpu_addr[0x2006] << 8);
+					ppu_addr_latch = 1;
 				}
 				else {
 					ppu_pw = (ppu_pw & 0xff00) + cpu_addr[0x2006];
+					ppu_addr_latch = 0;
 				}
-				ppu_addr_latch++;
 			}
 			// PPU DATA IN
 			if (cpu_bus == 0x2007) {
@@ -119,6 +120,13 @@ void mbu_run() {
 				ppu_addr[i], ppu_addr[i+1], ppu_addr[i+2], ppu_addr[i+3], ppu_addr[i+4], ppu_addr[i+5], ppu_addr[i+6], ppu_addr[i+7], ppu_addr[i+8],
 				ppu_addr[i+9], ppu_addr[i+10], ppu_addr[i+11], ppu_addr[i+12], ppu_addr[i+13], ppu_addr[i+14], ppu_addr[i+15]);
 			}
+			for (int i = 0x3f00; i < 0x3f20; i += 16) {
+				if (i % 256 == 0) debug_out(3, "PPU RAM PAGE %2X", i >> 8);
+				debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 
+				ppu_addr[i], ppu_addr[i+1], ppu_addr[i+2], ppu_addr[i+3], ppu_addr[i+4], ppu_addr[i+5], ppu_addr[i+6], ppu_addr[i+7], ppu_addr[i+8],
+				ppu_addr[i+9], ppu_addr[i+10], ppu_addr[i+11], ppu_addr[i+12], ppu_addr[i+13], ppu_addr[i+14], ppu_addr[i+15]);
+			}
+			// 0x100 is PPU OAM data
 			for (int i = 0; i < 0x100; i += 16) {
 				if (i % 256 == 0) debug_out(3, "PPU OAM PAGE %2X", i >> 8);
 				debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 
