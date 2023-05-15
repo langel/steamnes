@@ -18,6 +18,8 @@ uint32_t ppu_dot_downcounter;
 uint8_t  ppu_ctrl = 0;
 uint8_t  ppu_mask = 0;
 uint8_t  ppu_status = 0;
+uint8_t  ppu_scroll_x = 0;
+uint8_t  ppu_scroll_y = 0;
 uint16_t ppu_scanline = 0;
 uint16_t ppu_scan_dot = 0;
 uint16_t ppu_pw;
