@@ -1,10 +1,14 @@
 build:
-	gcc -Wall \
+	gcc \
+	-Wall \
+	main.c -o main.exe \
 	-std=c99 \
-	./main.c \
-	-I"C:\libsdl\include" \
-	-L"C:\libsdl\lib" \
+	-IC:/Users/puke7/source/w64devkit/include/SDL2 \
+	-Dmain=SDL_main \
+	-LC:/Users/puke7/source/w64devkit/lib \
 	-lmingw32 \
 	-lSDL2main \
 	-lSDL2 \
-	-o main.exe
+	-lSDL2_image \
+	-mwindows \
+	-mconsole
