@@ -12,8 +12,8 @@ int frame_counter;
 void core_init() {
 	fcl_init();
 	audio_init(32000, 2, 1024, AUDIO_F32SYS, &audio_callback);
-	window_state_set_filename("kdocm");
-	window_init("King Duck of Cluck Mountain");
+	window_state_set_filename("snw");
+	window_init("SteamNES");
 	//dpipe_init("src/state_game_play.c");
 	fvc_init(SCREEN_W, SCREEN_H);
 	//font_init();
@@ -32,6 +32,7 @@ int main(int argc, char* args[]) {
 		debug_out(0, "failed to load or identify rom file");
 		return 0;
 	}
+	core_init();
 	frame_set_fps(60);
 	while (fcl_running) {
 		SDL_SetRenderTarget(fvc_renderer, fvc_texture);
