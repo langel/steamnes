@@ -11,6 +11,10 @@ uint8_t mbu_data_bus;
 
 #define mbu_ppu_to_cpu(data, addr) { cpu_addr[addr] = data; }
 
+void mbu_init() {
+	ppu_init();
+}
+
 void mbu_start() {
 	mbu_clock_count = 0;
 	cpu_reset();
@@ -25,13 +29,18 @@ void mbu_start() {
 	debug_out(3, "CPU NMI Vector:   0x%4X", cpu_addr_nmi);
 }
 
-void mbu_run() {
+void mbu_frame() {
 	while (mbu_running) {
 		apu_clock();
 		if (!cpu_countdowner) {
 			cpu_countdowner = cpu_clock_div;
 //			if (nes_nmi) debug_out(3, "nmi troubles");
-			if (nes_nmi && (ppu_ctrl & 0x80)) cpu_nmi();
+			if (nes_nmi && (ppu_ctrl & 0x80)) {
+				// end of frame
+				cpu_nmi();
+				ppu_frame();
+				return;
+			}
 			else if (nes_irq) cpu_irq();
 			else cpu_cycle();
 		}

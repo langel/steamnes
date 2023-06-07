@@ -33,17 +33,17 @@ int main(int argc, char* args[]) {
 		return 0;
 	}
 	core_init();
+	mbu_init();
+	mbu_start();
 	frame_set_fps(60);
-	while (fcl_running) {
+	while (fcl_running && nes_running) {
 		SDL_SetRenderTarget(fvc_renderer, fvc_texture);
-		//state_controller_frame();
+		mbu_frame();
 		frame_counter++;
 		frame_wait_next();
 		fcl_update();
 		if (keys[SDL_SCANCODE_ESCAPE]) fcl_shutdown();
 	}
 	fcl_quit();
-	mbu_start();
-	mbu_run();
 	return 0;
 }

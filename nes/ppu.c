@@ -27,6 +27,13 @@ uint16_t ppu_addr_bus;
 uint8_t  ppu_addr_latch;
 uint8_t  ppu_data_bus;
 
+uint32_t * ppu_dot_data;
+SDL_Texture * ppu_dot_texture;
+
+void ppu_init() {
+	ppu_dot_data = malloc(256 * 240 * 4);
+	ppu_dot_texture = SDL_CreateTexture(fvc_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 256, 240);
+}
 
 void ppu_reset() {
 	ppu_scanline = 0;
@@ -41,6 +48,14 @@ void ppu_read_reg(int reg) {
 
 void ppu_write_reg(int reg) {
 	reg &= 0x7;
+}
+
+void ppu_frame() {
+	for (int i = 0x0000; i < 0x4000; i++) {
+		ppu_dot_data[i] = nes_pal[ppu_addr[i] & 0x3f];
+	}
+	SDL_UpdateTexture(ppu_dot_texture, NULL, ppu_dot_data, 256);
+	SDL_RenderCopy(fvc_renderer, ppu_dot_texture, NULL, &(SDL_Rect) { 47, 0, 256, 240 });
 }
 
 void ppu_dot() {
