@@ -50,6 +50,9 @@ void ppu_write_reg(int reg) {
 	reg &= 0x7;
 }
 
+void ppu_sprite_evaluation(int scanline) {
+}
+
 void ppu_frame() {
 	for (int i = 0x0000; i < 0x4000; i++) {
 		ppu_dot_data[i] = nes_pal[ppu_addr[i] & 0x3f];
@@ -65,6 +68,13 @@ void ppu_dot() {
 	}
 	if (ppu_scanline < 240) {
 		// render space
+		if (ppu_scan_dot < 256) {
+			int pixel_pos = ppu_scan_dot + (ppu_scanline << 8);
+			// find dot pattern
+			int tile_id = ppu_addr[(ppu_scan_dot >> 3) + ((ppu_scanline << 3) << 5)];
+			int tile_x = ppu_scan_dot % 7;
+			int tile_y = ppu_scanline % 7;
+		}
 	}
 	else if (ppu_scanline == 240) {
 		// post-render
