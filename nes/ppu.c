@@ -97,7 +97,7 @@ void ppu_dot() {
 			// attributes
 			int tile_pal = 0;
 			int attr = ppu_addr[nt + 0x3c0 + (pos_x >> 5) + ((pos_y >> 5) << 3)];
-			int attr_loc = ((pos_x >> 1) & 1) + (((pos_y >> 1) & 1) << 1);
+			int attr_loc = ((pos_x >> 3) & 1) + (((pos_y >> 3) & 1) << 1);
 			if (attr_loc == 0) tile_pal = attr & 0x03;
 			if (attr_loc == 1) tile_pal = (attr & 0x0c) >> 2;
 			if (attr_loc == 2) tile_pal = (attr & 0x30) >> 4;
