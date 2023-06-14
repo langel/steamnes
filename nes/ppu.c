@@ -58,6 +58,11 @@ void ppu_frame() {
 	for (int i = 0x0000; i < 0x4000; i++) {
 //		ppu_dot_data[i] = nes_pal[ppu_addr[i] & 0x3f];
 	}
+	// XXX debug palettes
+	for (int i = 0; i < 32; i += 2) {
+		ppu_dot_data[i*256] = nes_pal[ppu_addr[0x3f00 + i]];
+		ppu_dot_data[(i+1)*256] = nes_pal[ppu_addr[0x3f00 + i]];
+	}
 	SDL_UpdateTexture(ppu_dot_texture, NULL, ppu_dot_data, 256 * 4);
 	SDL_RenderCopy(fvc_renderer, ppu_dot_texture, NULL, &(SDL_Rect) { 47, 0, 256, 240 });
 	dpipe_update();
@@ -74,18 +79,29 @@ void ppu_dot() {
 		// render space
 		if (ppu_scan_dot < 256) {
 			// name table
+			// XXX needs scroll pos evaluation
 			int nt = 0x2000 + ((ppu_ctrl & 0x03) << 10);
 			// pattern table
 			int pt = (ppu_ctrl & 0x10) ? 0x1000 : 0x0000;
-			// find dot pattern
-			int tile_id = ppu_addr[nt + (ppu_scan_dot >> 3) + ((ppu_scanline >> 3) << 5)];
+			// scroll position
+			int pos_x = (ppu_scroll_x + ppu_scan_dot) % 256;
+			int pos_y = (ppu_scroll_y + ppu_scanline) % 240;
+			// find current dot
+			int tile_id = ppu_addr[nt + (ppu_scan_dot >> 3) + ((pos_y >> 3) << 5)];
 			int tile_x = ppu_scan_dot & 0x07;
 			int tile_col = 1 << (0x07 - tile_x);
-			int tile_y = ppu_scanline & 0x07;
+			int tile_y = pos_y & 0x07;
 			int tile_offset = pt + (tile_id << 4) + tile_y;
 			int tile_row_lo = ppu_addr[tile_offset];
 			int tile_row_hi = ppu_addr[tile_offset + 8];
+			// attributes
 			int tile_pal = 0;
+			int attr = ppu_addr[nt + 0x3c0 + (pos_x >> 5) + ((pos_y >> 5) << 3)];
+			int attr_loc = ((pos_x >> 1) & 1) + (((pos_y >> 1) & 1) << 1);
+			if (attr_loc == 0) tile_pal = attr & 0x03;
+			if (attr_loc == 1) tile_pal = (attr & 0x0c) >> 2;
+			if (attr_loc == 2) tile_pal = (attr & 0x30) >> 4;
+			if (attr_loc == 3) tile_pal = (attr & 0xc0) >> 6;
 			int color = (tile_row_lo & tile_col) ? 1 : 0;
 			color += (tile_row_hi & tile_col) ? 2 : 0;
 			ppu_dot_data[pxl_pos] = nes_pal[ppu_addr[0x3f00 + (tile_pal << 2) + color]];
