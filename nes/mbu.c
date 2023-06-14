@@ -146,12 +146,21 @@ void mbu_frame() {
 				cpu_addr[i+9], cpu_addr[i+10], cpu_addr[i+11], cpu_addr[i+12], cpu_addr[i+13], cpu_addr[i+14], cpu_addr[i+15]);
 			}
 			// 0x4000 is entire PPU addr
+			// PPU pattern table last page
+			for (int i = 0x1f00; i < 0; i += 16) {
+				if (i % 256 == 0) debug_out(3, "PPU RAM PAGE %2X", i >> 8);
+				debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 
+				ppu_addr[i], ppu_addr[i+1], ppu_addr[i+2], ppu_addr[i+3], ppu_addr[i+4], ppu_addr[i+5], ppu_addr[i+6], ppu_addr[i+7], ppu_addr[i+8],
+				ppu_addr[i+9], ppu_addr[i+10], ppu_addr[i+11], ppu_addr[i+12], ppu_addr[i+13], ppu_addr[i+14], ppu_addr[i+15]);
+			}
+			// PPU nametable first page
 			for (int i = 0x2000; i < 0x2100; i += 16) {
 				if (i % 256 == 0) debug_out(3, "PPU RAM PAGE %2X", i >> 8);
 				debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 
 				ppu_addr[i], ppu_addr[i+1], ppu_addr[i+2], ppu_addr[i+3], ppu_addr[i+4], ppu_addr[i+5], ppu_addr[i+6], ppu_addr[i+7], ppu_addr[i+8],
 				ppu_addr[i+9], ppu_addr[i+10], ppu_addr[i+11], ppu_addr[i+12], ppu_addr[i+13], ppu_addr[i+14], ppu_addr[i+15]);
 			}
+			// PPU palettes
 			for (int i = 0x3f00; i < 0x3f20; i += 16) {
 				if (i % 256 == 0) debug_out(3, "PPU RAM PAGE %2X", i >> 8);
 				debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 

@@ -11,6 +11,7 @@
 #include "./collision.c"
 #include "./curve.c"
 #include "./debug.c"
+#include "./dpipe.c"
 #include "./lerp.c"
 #include "./rng.c"
 

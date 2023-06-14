@@ -1,14 +1,15 @@
-#include "./util/core.c"
 #include "SDL.h"
+
 SDL_Event fcl_event;
 int fcl_running;
+
+#include "./util/core.c"
 
 #include "./audio.c"
 #include "./window.c"
 #include "./frame.c"
 #include "./keyboard.c"
 #include "./mouse.c"
-#include "./dpipe.c"
 
 #include "./fac.c"
 #include "./fvc.c"

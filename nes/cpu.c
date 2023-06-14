@@ -227,7 +227,7 @@ void cpu_cycle() {
 //	if (cpu_pw == 0xc07F) debug_out(3, "OAMDMA WRITE  OAMDMA WRITE OAMDMA WRITE ");
 //	if (cpu_pw == 0x0c07a) debug_out(3, "NMI JUMP TO STATE   %x", cpu_a);
 //	if (cpu_pw == 0xc1d5) cpu_crash(0, 0);;
-	if (cpu_cycle_count > 9999999) cpu_crash(0, cpu_cycle_count);
+	//if (cpu_cycle_count > 9999999) cpu_crash(0, cpu_cycle_count);
 	uint8_t opcode = cpu_addr[cpu_pw];
 	// DEBUG TOOLS & OPERATIONS
 //	debug_out(3, "%4x %2x %2x %2x", cpu_pw, opcode, cpu_addr[cpu_pw+1], cpu_addr[cpu_pw+2]); // basic code crawler

@@ -2,10 +2,10 @@
 mingw32-make
 main.exe
 @ECHO OFF
-REM IF EXIST "devpipe_death" (
-REM 	GOTO DEATH
-REM ) ELSE (
-REM 	GOTO LOOP
-REM )
-REM :DEATH
-REM del devpipe_death
+IF EXIST "devpipe_death" (
+	GOTO DEATH
+) ELSE (
+	GOTO LOOP
+)
+:DEATH
+del devpipe_death

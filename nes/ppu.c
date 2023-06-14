@@ -32,7 +32,8 @@ SDL_Texture * ppu_dot_texture;
 
 void ppu_init() {
 	ppu_dot_data = malloc(256 * 240 * 4);
-	ppu_dot_texture = SDL_CreateTexture(fvc_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 256, 240);
+	ppu_dot_texture = SDL_CreateTexture(fvc_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 256, 240);
+	dpipe_init("nes/ppu.c");
 }
 
 void ppu_reset() {
@@ -55,25 +56,40 @@ void ppu_sprite_evaluation(int scanline) {
 
 void ppu_frame() {
 	for (int i = 0x0000; i < 0x4000; i++) {
-		ppu_dot_data[i] = nes_pal[ppu_addr[i] & 0x3f];
+//		ppu_dot_data[i] = nes_pal[ppu_addr[i] & 0x3f];
 	}
-	SDL_UpdateTexture(ppu_dot_texture, NULL, ppu_dot_data, 256);
+	SDL_UpdateTexture(ppu_dot_texture, NULL, ppu_dot_data, 256 * 4);
 	SDL_RenderCopy(fvc_renderer, ppu_dot_texture, NULL, &(SDL_Rect) { 47, 0, 256, 240 });
+	dpipe_update();
 }
 
 void ppu_dot() {
+	static int pxl_pos;
 	if (ppu_scanline == 0 && ppu_scan_dot == 0) {
 		// reset sprite 0 and sprite overflow bits
 		ppu_status &= ~0x60;
+		pxl_pos = 0;
 	}
 	if (ppu_scanline < 240) {
 		// render space
 		if (ppu_scan_dot < 256) {
-			int pixel_pos = ppu_scan_dot + (ppu_scanline << 8);
+			// name table
+			int nt = 0x2000 + ((ppu_ctrl & 0x03) << 10);
+			// pattern table
+			int pt = (ppu_ctrl & 0x10) ? 0x1000 : 0x0000;
 			// find dot pattern
-			int tile_id = ppu_addr[(ppu_scan_dot >> 3) + ((ppu_scanline << 3) << 5)];
-			int tile_x = ppu_scan_dot % 7;
-			int tile_y = ppu_scanline % 7;
+			int tile_id = ppu_addr[nt + (ppu_scan_dot >> 3) + ((ppu_scanline >> 3) << 5)];
+			int tile_x = ppu_scan_dot & 0x07;
+			int tile_col = 1 << (0x07 - tile_x);
+			int tile_y = ppu_scanline & 0x07;
+			int tile_offset = pt + (tile_id << 4) + tile_y;
+			int tile_row_lo = ppu_addr[tile_offset];
+			int tile_row_hi = ppu_addr[tile_offset + 8];
+			int tile_pal = 0;
+			int color = (tile_row_lo & tile_col) ? 1 : 0;
+			color += (tile_row_hi & tile_col) ? 2 : 0;
+			ppu_dot_data[pxl_pos] = nes_pal[ppu_addr[0x3f00 + (tile_pal << 2) + color]];
+			pxl_pos++;
 		}
 	}
 	else if (ppu_scanline == 240) {
@@ -90,9 +106,12 @@ void ppu_dot() {
 	}
 	else {
 		// pre-render
+		/*
 		if (ppu_scan_dot == 340 && (ppu_frame_count % 1)) {
-			ppu_scanline = ppu_scan_dot = 0;
+			ppu_scan_dot = 0;
+			ppu_scanline = 0;
 		}
+		*/
 	}
 	ppu_scan_dot++;
 	if (ppu_scan_dot > 340) {
