@@ -6,6 +6,14 @@
 uint8_t ppu_addr[0x4000] = { 0 };
 uint8_t ppu_oam[0x0100] = { 0 };
 
+typedef struct {
+	uint8_t pattern0;
+	uint8_t pattern1;
+	uint8_t attributes;
+	uint8_t x_pos;
+} ppu_line_sprite;
+ppu_line_sprite ppu_line_sprites[8];
+
 #define ppu_clock_div_ntsc  4
 #define ppu_clock_div_pal   5
 #define ppu_clock_div_dendy 5
@@ -52,6 +60,22 @@ void ppu_write_reg(int reg) {
 }
 
 void ppu_sprite_evaluation(int scanline) {
+	// clear scanline buffer
+	memset(ppu_line_sprites, 0x00, sizeof ppu_line_sprites);
+	int n = 0;
+	// iterate over sprite oam data
+	for (int i = 0; i < 256; i += 4) {
+		int y = ppu_oam[i];
+		if (y > scanline - 7 && y < scanline + 7 && n < 8) {
+			ppu_line_sprites[n] = (ppu_line_sprite) {
+				ppu_addr[(ppu_oam[i + 1] << 5) + y],
+				ppu_addr[(ppu_oam[i + 1] << 5) + y + 8],
+				ppu_oam[i + 2],
+				ppu_oam[i + 3]
+			};
+			n++;
+		}
+	}
 }
 
 void ppu_frame() {
@@ -78,6 +102,7 @@ void ppu_dot() {
 	if (ppu_scanline < 240) {
 		// render space
 		if (ppu_scan_dot < 256) {
+			// BACKGROUND RENDER
 			// name table
 			// XXX needs scroll pos evaluation
 			int nt = 0x2000 + ((ppu_ctrl & 0x03) << 10);
@@ -104,8 +129,26 @@ void ppu_dot() {
 			if (attr_loc == 3) tile_pal = (attr & 0xc0) >> 6;
 			int color = (tile_row_lo & tile_col) ? 1 : 0;
 			color += (tile_row_hi & tile_col) ? 2 : 0;
+			// SPRITE(s) RENDER
+			/*	to do:
+				background priority
+				sprite 0 collision detection
+			*/
+			for (int i = 0; i < 8; i++) {
+				ppu_line_sprite *spr = &ppu_line_sprites[i];
+				if (spr->x_pos == 0) {
+					int spr_color = (int) (spr->pattern0 + (spr->pattern1 << 1));
+					if (spr_color) color = spr_color;
+				}
+				else spr->x_pos--;
+			}
+			// DONE
 			ppu_dot_data[pxl_pos] = nes_pal[ppu_addr[0x3f00 + (tile_pal << 2) + color]];
 			pxl_pos++;
+		}
+		// SPRITE EVALUATION
+		if (ppu_scan_dot == 256) {
+			ppu_sprite_evaluation(ppu_scanline);
 		}
 	}
 	else if (ppu_scanline == 240) {
