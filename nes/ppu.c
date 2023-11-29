@@ -60,6 +60,21 @@ void ppu_write_reg(int reg) {
 	reg &= 0x7;
 }
 
+
+void ppu_frame() {
+	for (int i = 0x0000; i < 0x4000; i++) {
+//		ppu_dot_data[i] = nes_pal[ppu_addr[i] & 0x3f];
+	}
+	// XXX debug palettes
+	for (int i = 0; i < 32; i += 2) {
+		ppu_dot_data[i*256] = nes_pal[ppu_addr[0x3f00 + i]];
+		ppu_dot_data[(i+1)*256] = nes_pal[ppu_addr[0x3f00 + i]];
+	}
+	SDL_UpdateTexture(ppu_dot_texture, NULL, ppu_dot_data, 256 * 4);
+	SDL_RenderCopy(fvc_renderer, ppu_dot_texture, NULL, &(SDL_Rect) { 47, 0, 256, 240 });
+	dpipe_update();
+}
+
 void ppu_sprite_evaluation(int scanline) {
 	// clear scanline buffer
 	memset(ppu_line_sprites, 0x00, sizeof ppu_line_sprites);
@@ -77,20 +92,6 @@ void ppu_sprite_evaluation(int scanline) {
 			n++;
 		}
 	}
-}
-
-void ppu_frame() {
-	for (int i = 0x0000; i < 0x4000; i++) {
-//		ppu_dot_data[i] = nes_pal[ppu_addr[i] & 0x3f];
-	}
-	// XXX debug palettes
-	for (int i = 0; i < 32; i += 2) {
-		ppu_dot_data[i*256] = nes_pal[ppu_addr[0x3f00 + i]];
-		ppu_dot_data[(i+1)*256] = nes_pal[ppu_addr[0x3f00 + i]];
-	}
-	SDL_UpdateTexture(ppu_dot_texture, NULL, ppu_dot_data, 256 * 4);
-	SDL_RenderCopy(fvc_renderer, ppu_dot_texture, NULL, &(SDL_Rect) { 47, 0, 256, 240 });
-	dpipe_update();
 }
 
 void ppu_dot() {
@@ -132,16 +133,19 @@ void ppu_dot() {
 			color += (tile_row_hi & tile_col) ? 2 : 0;
 			// SPRITE(s) RENDER
 			/*	to do:
-				background priority
 				sprite 0 collision detection
 			*/
 			for (int i = 0; i < 8; i++) {
 				ppu_line_sprite *spr = &ppu_line_sprites[i];
-				if (spr->x_pos == 0) {
-					int spr_color = (int) (spr->pattern0 + (spr->pattern1 << 1));
-					if (spr_color) color = spr_color;
+				if (spr->x_pos == 0 || spr->active) {
+					int spr_color = (int)
+						(((spr->pattern0 < spr->active) & 0x08) +
+						(((spr->pattern1 < spr->active) & 0x08) << 1));
+					if (spr_color != 0) color = spr_color;
+					spr->active++;
+					if (spr->active == 8) spr->active = 0;
 				}
-				else spr->x_pos--;
+				spr->x_pos--;
 			}
 			// DONE
 			ppu_dot_data[pxl_pos] = nes_pal[ppu_addr[0x3f00 + (tile_pal << 2) + color]];

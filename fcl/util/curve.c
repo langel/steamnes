@@ -4,7 +4,7 @@ float curve_apply(float val, float curve) {
 }
 
 float curve_get(float min, float max, float mid) {
-	return log(0.5f) / log((mid-min)/(max-min));
+	return log(0.5f) / log( (mid-min) / (max-min) );
 }
 
 float curve_inverse(float curve) {
