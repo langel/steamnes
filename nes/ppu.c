@@ -11,6 +11,7 @@ typedef struct {
 	uint8_t pattern1;
 	uint8_t attributes;
 	uint8_t x_pos;
+	uint8_t active;
 } ppu_line_sprite;
 ppu_line_sprite ppu_line_sprites[8];
 
