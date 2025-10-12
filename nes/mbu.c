@@ -138,6 +138,8 @@ void mbu_frame() {
 		ppu_countdowner--;
 		mbu_cycle_count++;
 		if (!nes_running) {
+			// XXX remove the following return to renable DUMPs
+			return;
 			// 0x800 covers 2kb of RAM
 			for (int i = 0; i < 0x200; i += 16) {
 				if (i % 256 == 0) debug_out(3, "CPU RAM PAGE %2X", i >> 8);

@@ -25,6 +25,7 @@ int rom_load(char* filename) {
 	// NES2.0 higher mapper nybble
 	rom_filename = malloc(strlen(filename));
 	strcpy(rom_filename, filename);
+	debug_out(1, "opening %s", filename);
 	FILE* rom = fopen(filename, "rb");
 	if (rom == NULL) {
 		debug_out(1, "failed to access %s", filename);
