@@ -28,7 +28,7 @@ int main(int argc, char* args[]) {
 	debug_level = 4;
 	debug_out(1, "SteamNES");
 	//int error = rom_load("game_rom.nes");
-	int error = rom_load("test_roms//01-implied.nes");
+	int error = rom_load("roms//Door Door (J).nes");
 	if (error) {
 		debug_out(0, "failed to load or identify rom file");
 		return 0;
