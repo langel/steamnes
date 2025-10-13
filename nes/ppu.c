@@ -87,7 +87,8 @@ void ppu_sprite_evaluation(int scanline) {
 				ppu_addr[(ppu_oam[i + 1] << 5) + y],
 				ppu_addr[(ppu_oam[i + 1] << 5) + y + 8],
 				ppu_oam[i + 2],
-				ppu_oam[i + 3]
+				ppu_oam[i + 3],
+				1
 			};
 			n++;
 		}
