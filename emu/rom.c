@@ -1,8 +1,10 @@
 
 enum rom_header_types {
-	unknown,
+	Archaic,
+	iNES07,
 	iNES,
 	NES2,
+	unknown,
 };
 enum rom_header_types rom_header_type;
 
@@ -48,41 +50,54 @@ int rom_load(char* filename) {
 			return 1;
 		}
 	}
-	rom_header_type = iNES;
-	strcpy(rom_header_type_str, "iNES");
+	// HEADER ANALYSIS
 	// byte 4 PRG ROM data (16384 * x bytes)
 	rom_prg_size = rom_header[4] << 14;
 	// byte 5 CHR ROM data, if present (8192 * y bytes)
 	rom_chr_size = rom_header[5] << 13;
-	// byte 6 has mapper, trainer, misc.
-	rom_mapper = rom_header[6] >> 4;
+	// byte 6 has mapper lo bits, trainer, misc.
 	if (rom_header[6] & 0x04) {
 		rom_has_trainer = 512;
 	}
-	// byte 7 has mapper, NES2 flag, misc.
-	rom_mapper += (rom_header[7] & 0xf0);
-	if ((rom_header[7] & 0x0C) == 0x08) {
-		rom_header_type = NES2;
-		strcpy(rom_header_type_str, "NES2.0");
+	rom_mapper = rom_header[6] >> 4;
+	// HEADER TYPE & MAPPER
+	// byte 7 has mapper hi bits, NES2 flag, misc.
+	if ((rom_header[7] & 0x04) == 0x04) {
+		rom_header_type = Archaic;
+		strcpy(rom_header_type_str, "Archaic");
 	}
-	// compensate for header size
+	else {
+		rom_mapper += (rom_header[7] & 0xf0);
+		if ((rom_header[7] & 0x0C) == 0x00) {
+			// xxx header bytes 12-15 should be 0
+			rom_header_type = iNES;
+			strcpy(rom_header_type_str, "iNES");
+		}
+		if ((rom_header[7] & 0x0C) == 0x08) {
+			// xxx byte 9 should not indicate exceeding rom image size
+			//     otherwise is iNES0.7
+			rom_header_type = NES2;
+			strcpy(rom_header_type_str, "NES2.0");
+		}
+	}
+	debug_out(3, "%s header found", rom_header_type_str);
+	debug_out(3, "Mapper ID %i", rom_mapper);
+	// PRG LOADER
 	rom_prg_start = 16 + rom_has_trainer;
-	// compensate for program size
+	rom_prg_data = malloc(rom_prg_size);
+	memset(rom_prg_data, 0, rom_prg_size);
+	fseek(rom, rom_prg_start, SEEK_SET);
+	// XXX copy prg to cpu_addr -- where does this live?
+	fread(rom_prg_data, rom_prg_size, 1, rom);
+	debug_out(3, "PRG ROM data size %i", rom_prg_size);
+	// CHR LOADER
 	rom_chr_start = rom_prg_start + rom_prg_size;
-	// load all rom data
 	rom_chr_data = malloc(rom_chr_size);
 	memset(rom_chr_data, 0, rom_chr_size);
 	fseek(rom, rom_chr_start, SEEK_SET);
 	fread(rom_chr_data, rom_chr_size, 1, rom);
-	rom_prg_data = malloc(rom_prg_size);
-	memset(rom_prg_data, 0, rom_prg_size);
-	fseek(rom, rom_prg_start, SEEK_SET);
-	fread(rom_prg_data, rom_prg_size, 1, rom);
-	// debug status
-	debug_out(3, "%s header found", rom_header_type_str);
 	debug_out(3, "CHR ROM data size %i", rom_chr_size);
-	debug_out(3, "PRG ROM data size %i", rom_prg_size);
-	// XXX copy prg to cpu_addr -- where does this live?
+	// load more rom data . . .
 	switch (rom_mapper) {
 		case 0:
 			// NROM128
@@ -100,6 +115,7 @@ int rom_load(char* filename) {
 			break;
 		default:
 			debug_out(0, "Mapper type unsupported!");
+			return 1;
 	}
 	// shut it down
 	fclose(rom);
