@@ -136,6 +136,9 @@ void cpu_reset() {
 #define ror_zpg() { cpu_addr_load_zpg(); cpu_op_ror(cpu_addr[cpu_bus]); cpu_write++; cpu_cl = 5; }
 #define ror_zpx() { cpu_addr_load_zpx(); cpu_op_ror(cpu_addr[cpu_bus]); cpu_write++; cpu_cl = 6; }
 // maths + logics
+#define adc_abs() { cpu_addr_load_abs(); cpu_op_adc(cpu_addr[cpu_bus]); cpu_cl = 4; }
+#define adc_abx() { cpu_addr_load_abx(); cpu_op_adc(cpu_addr[cpu_bus]); cpu_cl = 5; }
+#define adc_aby() { cpu_addr_load_aby(); cpu_op_adc(cpu_addr[cpu_bus]); cpu_cl = 5; }
 #define adc_imm() { cpu_pw++; cpu_op_adc(cpu_addr[cpu_pw]); cpu_pw++; cpu_cl = 2; }
 #define adc_zpg() { cpu_addr_load_zpg(); cpu_op_adc(cpu_addr[cpu_bus]); cpu_cl = 3; }
 #define adc_zpx() { cpu_addr_load_zpx(); cpu_op_adc(cpu_addr[cpu_bus]); cpu_cl = 4; }
@@ -341,6 +344,9 @@ void cpu_cycle() {
 		case 0x66: ror_zpg(); break;
 		case 0x76: ror_zpx(); break;
 		// maths
+		case 0x6d: adc_abs(); break;
+		case 0x7d: adc_abx(); break;
+		case 0x79: adc_aby(); break;
 		case 0x69: adc_imm(); break;
 		case 0x65: adc_zpg(); break;
 		case 0x75: adc_zpx(); break;
