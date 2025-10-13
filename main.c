@@ -29,7 +29,8 @@ int main(int argc, char* args[]) {
 	debug_out(1, "SteamNES");
 	//int error = rom_load("game_rom.nes");
 	//int error = rom_load("roms//Baseball (J).nes");
-	int error = rom_load("roms//Spartan X (J).nes");
+	//int error = rom_load("roms//Spartan X (J).nes");
+	int error = rom_load("roms//Super Mario Bros..nes");
 	if (error) {
 		debug_out(0, "failed to load or identify rom file");
 		return 0;
