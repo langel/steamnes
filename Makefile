@@ -1,5 +1,6 @@
 build:
 	gcc \
+	-g \
 	-Wall \
 	main.c -o main.exe \
 	-std=c99 \

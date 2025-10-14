@@ -139,14 +139,11 @@ void cpu_reset() {
 #define adc_abs() { cpu_addr_load_abs(); cpu_op_adc(cpu_addr[cpu_bus]); cpu_cl = 4; }
 #define adc_abx() { cpu_addr_load_abx(); cpu_op_adc(cpu_addr[cpu_bus]); cpu_cl = 5; }
 #define adc_aby() { cpu_addr_load_aby(); cpu_op_adc(cpu_addr[cpu_bus]); cpu_cl = 5; }
+#define adc_idx() { cpu_addr_load_idx(); cpu_op_adc(cpu_addr[cpu_bus]); cpu_cl = 6; }
+#define adc_idy() { cpu_addr_load_idy(); cpu_op_adc(cpu_addr[cpu_bus]); cpu_cl = 6; }
 #define adc_imm() { cpu_pw++; cpu_op_adc(cpu_addr[cpu_pw]); cpu_pw++; cpu_cl = 2; }
 #define adc_zpg() { cpu_addr_load_zpg(); cpu_op_adc(cpu_addr[cpu_bus]); cpu_cl = 3; }
 #define adc_zpx() { cpu_addr_load_zpx(); cpu_op_adc(cpu_addr[cpu_bus]); cpu_cl = 4; }
-#define sbc_abs() { cpu_addr_load_abs(); cpu_op_sbc(cpu_addr[cpu_bus]); cpu_cl = 4; }
-#define sbc_abx() { cpu_addr_load_abx(); cpu_op_sbc(cpu_addr[cpu_bus]); cpu_cl = 5; }
-#define sbc_aby() { cpu_addr_load_aby(); cpu_op_sbc(cpu_addr[cpu_bus]); cpu_cl = 5; }
-#define sbc_imm() { cpu_pw++; cpu_op_sbc(cpu_addr[cpu_pw]); cpu_pw++; cpu_cl = 2; }
-#define sbc_zpg() { cpu_addr_load_zpg(); cpu_op_sbc(cpu_addr[cpu_bus]); cpu_cl = 3; }
 #define and_abs() { cpu_addr_load_abs(); cpu_op_and(cpu_addr[cpu_bus]); cpu_cl = 4; }
 #define and_abx() { cpu_addr_load_abx(); cpu_op_and(cpu_addr[cpu_bus]); cpu_cl = 5; }
 #define and_aby() { cpu_addr_load_aby(); cpu_op_and(cpu_addr[cpu_bus]); cpu_cl = 5; }
@@ -164,6 +161,13 @@ void cpu_reset() {
 #define ora_aby() { cpu_addr_load_aby(); cpu_op_ora(cpu_addr[cpu_bus]); cpu_cl = 5; }
 #define ora_idx() { cpu_addr_load_idx(); cpu_op_ora(cpu_addr[cpu_bus]); cpu_cl = 6; }
 #define ora_idy() { cpu_addr_load_idy(); cpu_op_ora(cpu_addr[cpu_bus]); cpu_cl = 6; }
+#define sbc_abs() { cpu_addr_load_abs(); cpu_op_sbc(cpu_addr[cpu_bus]); cpu_cl = 4; }
+#define sbc_abx() { cpu_addr_load_abx(); cpu_op_sbc(cpu_addr[cpu_bus]); cpu_cl = 5; }
+#define sbc_aby() { cpu_addr_load_aby(); cpu_op_sbc(cpu_addr[cpu_bus]); cpu_cl = 5; }
+#define sbc_idx() { cpu_addr_load_idx(); cpu_op_sbc(cpu_addr[cpu_bus]); cpu_cl = 6; }
+#define sbc_idy() { cpu_addr_load_idy(); cpu_op_sbc(cpu_addr[cpu_bus]); cpu_cl = 6; }
+#define sbc_imm() { cpu_pw++; cpu_op_sbc(cpu_addr[cpu_pw]); cpu_pw++; cpu_cl = 2; }
+#define sbc_zpg() { cpu_addr_load_zpg(); cpu_op_sbc(cpu_addr[cpu_bus]); cpu_cl = 3; }
 // weirdos
 #define bit_abs() { cpu_addr_load_abs(); cpu_op_bit(cpu_addr[cpu_bus]); cpu_read++; cpu_cl = 4; }
 #define bit_zpg() { cpu_addr_load_zpg(); cpu_op_bit(cpu_addr[cpu_bus]); cpu_read++; cpu_cl = 3; }
@@ -347,14 +351,11 @@ void cpu_cycle() {
 		case 0x6d: adc_abs(); break;
 		case 0x7d: adc_abx(); break;
 		case 0x79: adc_aby(); break;
+		case 0x61: adc_idx(); break;
+		case 0x71: adc_idy(); break;
 		case 0x69: adc_imm(); break;
 		case 0x65: adc_zpg(); break;
 		case 0x75: adc_zpx(); break;
-		case 0xed: sbc_abs(); break;
-		case 0xfd: sbc_abx(); break;
-		case 0xf9: sbc_aby(); break;
-		case 0xe9: sbc_imm(); break;
-		case 0xe5: sbc_zpg(); break;
 		case 0x2d: and_abs(); break;
 		case 0x3d: and_abx(); break;
 		case 0x39: and_aby(); break;
@@ -372,6 +373,13 @@ void cpu_cycle() {
 		case 0x19: ora_aby(); break;
 		case 0x01: ora_idx(); break;
 		case 0x11: ora_idy(); break;
+		case 0xed: sbc_abs(); break;
+		case 0xfd: sbc_abx(); break;
+		case 0xf9: sbc_aby(); break;
+		case 0xe1: sbc_idx(); break;
+		case 0xf1: sbc_idy(); break;
+		case 0xe9: sbc_imm(); break;
+		case 0xe5: sbc_zpg(); break;
 		// weirdos
 		case 0x2c: bit_abs(); break;
 		case 0x24: bit_zpg(); break;

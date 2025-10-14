@@ -106,7 +106,7 @@ void mbu_frame() {
 					ppu_addr_latch = 1;
 				}
 				else {
-					ppu_pw = (ppu_pw & 0xff00) + cpu_addr[0x2006];
+					ppu_pw = (ppu_pw & 0x3f00) + cpu_addr[0x2006];
 					ppu_addr_latch = 0;
 				}
 				mbu_ppu_to_cpu(ppu_addr[ppu_pw], 0x2007);
@@ -116,6 +116,7 @@ void mbu_frame() {
 				ppu_addr[ppu_pw] = cpu_addr[0x2007];
 				// pointer advances
 				ppu_pw += (ppu_ctrl & 0x04) ? 0x20 : 0x01;
+				ppu_pw &= 0x3fff;
 				// setup for potential cpu reads
 				mbu_ppu_to_cpu(ppu_addr[ppu_pw], 0x2007);
 			}
@@ -139,14 +140,15 @@ void mbu_frame() {
 		mbu_cycle_count++;
 		if (!nes_running) {
 			// XXX remove the following return to renable DUMPs
-			return;
+			//return;
 			// 0x800 covers 2kb of RAM
-			for (int i = 0; i < 0x200; i += 16) {
+			for (int i = 0; i < 0x300; i += 16) {
 				if (i % 256 == 0) debug_out(3, "CPU RAM PAGE %2X", i >> 8);
 				debug_out(3, "%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x", 
 				cpu_addr[i], cpu_addr[i+1], cpu_addr[i+2], cpu_addr[i+3], cpu_addr[i+4], cpu_addr[i+5], cpu_addr[i+6], cpu_addr[i+7], cpu_addr[i+8],
 				cpu_addr[i+9], cpu_addr[i+10], cpu_addr[i+11], cpu_addr[i+12], cpu_addr[i+13], cpu_addr[i+14], cpu_addr[i+15]);
 			}
+			return;
 			// 0x4000 is entire PPU addr
 			// PPU pattern table last page
 			for (int i = 0x1f00; i < 0; i += 16) {
