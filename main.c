@@ -33,12 +33,12 @@ int main(int argc, char* args[]) {
 	//int error = rom_load("roms//Dig Dug II (J) [!].nes"); // tiles
 	//int error = rom_load("roms//Door Door (J).nes"); // barely anything
 	//int error = rom_load("roms//Elevator Action (J).nes");
-	//int error = rom_load("roms//F-1 Race (J).nes"); // tiles
+	int error = rom_load("roms//F-1 Race (J).nes"); // tiles
 	//int error = rom_load("roms//Pac-Land (J) [a1].nes"); // mmc1
 	//int error = rom_load("roms//Spartan X (J).nes"); // tiles
 	//int error = rom_load("roms//Squoon (J) [!].nes");
 	//int error = rom_load("roms//Super Mario Bros..nes"); // gray
-	int error = rom_load("roms//Thexder (J) [!].nes");
+	//int error = rom_load("roms//Thexder (J) [!].nes");
 	//int error = rom_load("test_roms//01-implied.nes");
 	//int error = rom_load("test_roms//02-immediate.nes");
 	//int error = rom_load("test_roms//03-zero_page.nes");

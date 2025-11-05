@@ -1,0 +1,135 @@
+WORKING SPEC
+
+All registers are 4-bit words.
+
+Master clock?
+	PCE is 21.477MHZ w/ 12bit dividers
+	NES is the same  w/ 11bit dividers
+
+
+MAIN REGISTERS
+
+R00  Main Amplitude Left
+R01  Main Amplitude Right
+		Mix is divided by Value inverted + 1
+R02  Channel Enable 4-7
+R03  Channel Enable 0-3
+R04  Frequency Divider Mask Mid  $0x0
+R05  Frequency Divider Mask Low  $00x
+..
+R0A  Channel Set Write Id 
+R0B  Channel Set Write Register
+R0C  Channel Write
+R0D  WRAM Pointer Reset
+R0E  WRAM Push Address
+R0F  WRAM Write
+
+
+
+CHANNEL REGISTERS
+
+R00  Channel Amplitude Left
+R01  Channel Amplitude Right
+		Waveform is multiplied by Value
+R02  Waveform
+		0  Pulse
+		1  Saw/Tri
+		2  Sine
+		3  Half Sine
+		4	LFSR
+		5	Brown Noise
+		6	White Noise
+		7 ..
+		8  Wavetable 0
+		9  Wavetable 1
+		A  Wavetable 2
+		B  Wavetable 3
+		C  Wavetable 4
+		D  Wavetable 5
+		E  Wavetable 6
+		F  Wavetable 7
+R03  Waveform Modifier
+		Duty Cycle on Pulse
+		LFSR size/algorithm
+			7 + value?
+			NES is 15
+			SID is 23
+		Waveform phase offset << 1
+		etc..
+..
+R05  Frequency Divider High
+R06  Frequency Divider Mid
+R07  Frequency Divider Low
+..
+R0F  Output Routing
+		%0001 Main
+		%0010 Filter
+		%0100 Delay
+		%1000 ???
+
+
+
+FILTER REGISTERS
+
+Accesed as channel 8
+R00  Filter Modes Enable
+		%0001 Low Pass
+		%0010 Band Pass
+		%0100 High Pass
+		%1000 Notch Reject
+..
+R02  Resonance High
+R03  Resonance Low
+..
+R05  Frequency Divider High
+R06  Frequency Divider Mid
+R07  Frequency Divider Low
+
+
+
+DELAY REGISTERS
+
+Accesed as channel 9
+R00  Control
+		%000x Enabled 8-bit Mode
+R01  Buffer Size
+		in 256 word increments
+		8-bit mode enabled ignores lowest bit
+..
+R05  Frequency Divider High
+R06  Frequency Divider Mid
+R07  Frequency Divider Low
+
+
+
+SAMPLE PLAYBACK REGISTERS
+
+Accesed as channels C-F
+Corresponds to channels 0-3
+R00  Control
+		%000x Enable 8-Bit Mode
+		%00x0 Enable Loop Point
+		%x000 Channel Override
+..
+R02  Start Address High  $x000
+R03  Start Address Mid   $0x00
+R04  Start Address Low   $00x0
+		start address * 256
+..
+R08  Sample Length High  $0x00
+R09  Sample Length Mid   $00x0
+R0A  Sample Length Low   $000x
+		max length 4095 
+		spans 8k in 8-bit mode
+R0B  Loop Point    High  $0x00
+R0C  Loop Point    Mid   $00x0
+R0D  Loop Point    Low   $000x
+
+
+
+WRAM
+
+64kb of 4-bit word internal work ram.
+Wavetables are 32 words long located in page 1.
+Sample data can be played back from the full block.
+Echo buffer date is streamed backwards from top of ram.
