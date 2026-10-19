@@ -1,5 +1,5 @@
 :LOOP
-mingw32-make
+make
 main.exe
 @ECHO OFF
 IF EXIST "devpipe_death" (

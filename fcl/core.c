@@ -1,4 +1,4 @@
-#include "SDL.h"
+#include <SDL.h>
 
 SDL_Event fcl_event;
 int fcl_running;
