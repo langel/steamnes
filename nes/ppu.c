@@ -42,7 +42,7 @@ SDL_Texture * ppu_dot_texture;
 void ppu_init() {
 	ppu_dot_data = malloc(256 * 240 * 4);
 	ppu_dot_texture = SDL_CreateTexture(fvc_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 256, 240);
-	dpipe_init("nes/ppu.c");
+	//dpipe_init("nes/ppu.c");
 }
 
 void ppu_reset() {

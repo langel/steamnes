@@ -1,4 +1,5 @@
 CC ?= gcc
+GDB ?= gdb
 TARGET ?= main.exe
 SRC ?= main.c
 
@@ -26,10 +27,13 @@ endif
 	SDL2_LIBS := -L$(SDL2_PREFIX)/lib -lmingw32 -lSDL2main -lSDL2 -mwindows -mconsole
 endif
 
-.PHONY: build clean
+.PHONY: build clean debug
 
 build:
-	$(CC) $(CFLAGS) $(SRC) -o $(TARGET) $(SDL2_CFLAGS) $(SDL2_LIBS)
+	$(CC) $(CFLAGS) -Og $(SRC) -o $(TARGET) $(SDL2_CFLAGS) $(SDL2_LIBS)
 
 clean:
 	rm -f $(TARGET)
+
+debug: build
+	$(GDB) $(TARGET)

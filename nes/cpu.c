@@ -78,9 +78,9 @@ void cpu_reset() {
                            if ((cpu_a & 0x80) != (cpu_alu & 0x80)) cpu_p |= cpu_fv; else cpu_p &= ~cpu_fv; cpu_a = cpu_alu & 0xff; cpu_p_set_nz(cpu_a); }
 #define cpu_op_sbc(byte) { cpu_alu = cpu_a - byte - ((cpu_p & cpu_fc) ? 0 : 1); if (cpu_alu & 0xff00) cpu_p &= ~cpu_fc; else cpu_p |= cpu_fc; \
                            if ((cpu_a & 0x80) != (cpu_alu & 0x80)) cpu_p |= cpu_fv; else cpu_p &= ~cpu_fv; cpu_a = cpu_alu & 0xff; cpu_p_set_nz(cpu_a); }
-#define cpu_op_and(byte) { cpu_a &= byte; cpu_p_set_nz(byte); }
-#define cpu_op_eor(byte) { cpu_a ^= byte; cpu_p_set_nz(byte); }
-#define cpu_op_ora(byte) { cpu_a |= byte; cpu_p_set_nz(byte); }
+#define cpu_op_and(byte) { cpu_a &= byte; cpu_p_set_nz(cpu_a); }
+#define cpu_op_eor(byte) { cpu_a ^= byte; cpu_p_set_nz(cpu_a); }
+#define cpu_op_ora(byte) { cpu_a |= byte; cpu_p_set_nz(cpu_a); }
 #define cpu_op_asl(byte) { if (byte & 0x80) cpu_p |= cpu_fc; else cpu_p &= ~cpu_fc; byte <<= 1; cpu_p_set_nz(byte); }
 #define cpu_op_lsr(byte) { if (byte & 0x01) cpu_p |= cpu_fc; else cpu_p &= ~cpu_fc; byte >>= 1; cpu_p_set_nz(byte); }
 #define cpu_op_rol(byte) { cpu_data = cpu_p; if (byte & 0x80) cpu_p |= cpu_fc; else cpu_p &= ~cpu_fc; byte <<= 1; if (cpu_data & cpu_fc) byte |= 0x01; cpu_p_set_nz(byte); }
@@ -152,7 +152,7 @@ void cpu_reset() {
 #define eor_abx() { cpu_addr_load_abx(); cpu_op_eor(cpu_addr[cpu_bus]); cpu_cl = 4; }
 #define eor_aby() { cpu_addr_load_aby(); cpu_op_eor(cpu_addr[cpu_bus]); cpu_cl = 4; }
 #define eor_imm() { cpu_pw++; cpu_op_eor(cpu_addr[cpu_pw]); cpu_pw++; cpu_cl = 2; }
-#define eor_zpg() { cpu_addr_load_zpg(); cpu_op_eor(cpu_addr[cpu_pw]); cpu_cl = 3; }
+#define eor_zpg() { cpu_addr_load_zpg(); cpu_op_eor(cpu_addr[cpu_bus]); cpu_cl = 3; }
 #define ora_imm() { cpu_pw++; cpu_op_ora(cpu_addr[cpu_pw]); cpu_pw++; cpu_cl = 2; }
 #define ora_zpg() { cpu_addr_load_zpg(); cpu_op_ora(cpu_addr[cpu_bus]); cpu_cl = 3; }
 #define ora_zpx() { cpu_addr_load_zpx(); cpu_op_ora(cpu_addr[cpu_bus]); cpu_cl = 4; }
@@ -196,14 +196,14 @@ void cpu_reset() {
 #define cmp_zpg() { cpu_addr_load_zpg(); cpu_p &= ~cpu_fc; if (cpu_a >= cpu_addr[cpu_bus]) cpu_p |= cpu_fc; cpu_p_set_nz((cpu_a - cpu_addr[cpu_bus]) & 0xff); cpu_cl = 3; }
 #define cmp_zpx() { cpu_addr_load_zpx(); cpu_p &= ~cpu_fc; if (cpu_a >= cpu_addr[cpu_bus]) cpu_p |= cpu_fc; cpu_p_set_nz((cpu_a - cpu_addr[cpu_bus]) & 0xff); cpu_cl = 4; }
 #define cpx_imm() { cpu_pw++; cpu_p &= ~cpu_fc; if (cpu_x >= cpu_addr[cpu_pw]) cpu_p |= cpu_fc; cpu_p_set_nz((cpu_x - cpu_addr[cpu_pw]) & 0xff); cpu_pw++; cpu_cl = 2; }
-#define cpx_zpg() { cpu_addr_load_zpx(); cpu_p &= ~cpu_fc; if (cpu_y >= cpu_addr[cpu_bus]) cpu_p |= cpu_fc; cpu_p_set_nz((cpu_y - cpu_addr[cpu_bus]) & 0xff); cpu_cl = 3; }
+#define cpx_zpg() { cpu_addr_load_zpx(); cpu_p &= ~cpu_fc; if (cpu_x >= cpu_addr[cpu_bus]) cpu_p |= cpu_fc; cpu_p_set_nz((cpu_y - cpu_addr[cpu_bus]) & 0xff); cpu_cl = 3; }
 #define cpy_imm() { cpu_pw++; cpu_p &= ~cpu_fc; if (cpu_y >= cpu_addr[cpu_pw]) cpu_p |= cpu_fc; cpu_p_set_nz((cpu_y - cpu_addr[cpu_pw]) & 0xff); cpu_pw++; cpu_cl = 2; }
 #define cpy_zpg() { cpu_addr_load_zpg(); cpu_p &= ~cpu_fc; if (cpu_y >= cpu_addr[cpu_bus]) cpu_p |= cpu_fc; cpu_p_set_nz((cpu_y - cpu_addr[cpu_bus]) & 0xff); cpu_cl = 3; }
 // loaders
 #define lda_abs() { cpu_addr_load_abs(); cpu_a = cpu_addr[cpu_bus]; cpu_p_set_nz(cpu_a); cpu_read++; cpu_cl = 5; }
 #define lda_abx() { cpu_addr_load_abx(); cpu_a = cpu_addr[cpu_bus]; cpu_p_set_nz(cpu_a); cpu_read++; cpu_cl = 5; }
 #define lda_aby() { cpu_addr_load_aby(); cpu_a = cpu_addr[cpu_bus]; cpu_p_set_nz(cpu_a); cpu_read++; cpu_cl = 5; }
-#define lda_imm() { cpu_pw++; cpu_a = cpu_addr[cpu_pw]; cpu_p_set_nz(cpu_x); cpu_pw++; cpu_read++; cpu_cl = 2; }
+#define lda_imm() { cpu_pw++; cpu_a = cpu_addr[cpu_pw]; cpu_p_set_nz(cpu_a); cpu_pw++; cpu_read++; cpu_cl = 2; }
 #define lda_zpg() { cpu_addr_load_zpg(); cpu_a = cpu_addr[cpu_bus]; cpu_p_set_nz(cpu_a); cpu_read++; cpu_cl = 3; }
 #define lda_zpx() { cpu_addr_load_zpx(); cpu_a = cpu_addr[cpu_bus]; cpu_p_set_nz(cpu_a); cpu_read++; cpu_cl = 4; }
 #define lda_idx() { cpu_addr_load_idx(); cpu_a = cpu_addr[cpu_bus]; cpu_p_set_nz(cpu_a); cpu_read++; cpu_cl = 6; }
@@ -234,12 +234,12 @@ void cpu_reset() {
 void cpu_crash(int opcode, int timeout) {
 	printf("%d", debug_level);
 	debug_out(1, "PROCESSOR DISCOMBOBULATION");
-	debug_out(1, "2a03 undefined opcode: 0x%2X", opcode);
+	debug_out(1, "2a03 undefined opcode: 0x%02X", opcode);
 	if (timeout) {
 		// xxx wtf is this?
 		debug_out(1, "TIMEOUT DEBUGGER");
 	}
-	debug_out(3, "program counter pos: 0x%4X", cpu_pw);
+	debug_out(3, "program counter pos: 0x%04X", cpu_pw);
 	debug_out(3, "A: %2x  X: %2x  Y: %2x  S: %2x", cpu_a, cpu_x, cpu_y, cpu_s);
 	debug_out(3, "C: %d  Z: %d  I: %d  D: %d  B: %d  V: %d  N: %d", 
 		(cpu_p & cpu_fc) ? 1 : 0,

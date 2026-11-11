@@ -25,7 +25,7 @@ int rom_load(char* filename) {
 	// XXX TODO
 	// chr and prg ram
 	// NES2.0 higher mapper nybble
-	rom_filename = malloc(strlen(filename));
+	rom_filename = malloc(strlen(filename) + 1);
 	strcpy(rom_filename, filename);
 	debug_out(1, "opening %s", filename);
 	FILE* rom = fopen(filename, "rb");
@@ -103,6 +103,7 @@ int rom_load(char* filename) {
 			// NROM128
 			if (rom_prg_size >> 14 == 1) {
 				debug_out(3, "Mapper %i NROM-128", rom_mapper);
+				memcpy(cpu_addr + 0x8000, rom_prg_data, rom_prg_size);
 				memcpy(cpu_addr + 0xc000, rom_prg_data, rom_prg_size);
 				memcpy(ppu_addr, rom_chr_data, rom_chr_size);
 			}
@@ -115,6 +116,8 @@ int rom_load(char* filename) {
 			break;
 		default:
 			debug_out(0, "Mapper type unsupported!");
+			fclose(rom);
+			free(rom_header);
 			return 1;
 	}
 	// shut it down

@@ -47,6 +47,13 @@ placeholder text for ideas around this project
 	- 256 indexed colors palette 
 		- 24bit RGB values
 		- color 255 is transparent?
+	- OR PALETTES COULD BE
+		- 4bit 4 channel
+		- 5bit 3 channel
+		- 16 colors per palette?
+		- 8bit 4 channels = 64 colors = 4 16 color palettes
+			then grafx pixels stored as 4bit reference
+			pal index 0 shared
 	- 256 on screen sprites
 		- max size: 256x256
 		- x,y pos off screen

@@ -19,7 +19,7 @@ void window_state_load() {
 	//int display_current = SDL_GetWindowDisplayIndex(window);
 	//SDL_Rect display_bounds = SDL_GetDisplayBounds(display_current, display_bounds);
 	char * path = str_new(256);
-	snprintf(path, 256, "%s%s", window_state_file, window_file_ext);
+	snprintf(path, 256+4, "%s%s", window_state_file, window_file_ext);
 	//printf("%s\n", path);
 	SDL_Rect rect;
 	struct stat buffer;
@@ -46,7 +46,7 @@ void window_state_save() {
 	//printf("window position: %d x %d\n", rect.x, rect.y);
 	//printf("window dimensions: %d x %d\n", rect.w, rect.h);
 	char * path = str_new(256);
-	snprintf(path, 256, "%s%s", window_state_file, window_file_ext);
+	snprintf(path, 256+4, "%s%s", window_state_file, window_file_ext);
 	printf("%s\n", path);
 	FILE * fp = fopen(path, "w");
 	fwrite(&rect, sizeof(struct SDL_Rect), 1, fp);
