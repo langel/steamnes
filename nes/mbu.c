@@ -109,6 +109,7 @@ void mbu_frame() {
 					ppu_pw = (ppu_pw & 0x3f00) + cpu_addr[0x2006];
 					ppu_addr_latch = 0;
 				}
+				ppu_pw &= 0x3fff;
 				mbu_ppu_to_cpu(ppu_addr[ppu_pw], 0x2007);
 			}
 			// PPU DATA IN
