@@ -14,6 +14,7 @@ void core_init() {
 	audio_init(32000, 2, 1024, AUDIO_F32SYS, &audio_callback);
 	window_state_set_filename("snw");
 	window_init("SteamNES");
+	window_ontop_set_true(window);
 	dpipe_init("main.c");
 	fvc_init(SCREEN_W, SCREEN_H);
 	//font_init();

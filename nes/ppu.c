@@ -7,11 +7,12 @@ uint8_t ppu_addr[0x4000] = { 0 };
 uint8_t ppu_oam[0x0100] = { 0 };
 
 typedef struct {
+	uint8_t id;
 	uint8_t pattern0;
 	uint8_t pattern1;
 	uint8_t attributes;
 	uint8_t x_pos;
-	uint8_t active;
+	uint8_t y_pos;
 } ppu_line_sprite;
 ppu_line_sprite ppu_line_sprites[8];
 
@@ -82,13 +83,21 @@ void ppu_sprite_evaluation(int scanline) {
 	// iterate over sprite oam data
 	for (int i = 0; i < 256; i += 4) {
 		int row = scanline - ppu_oam[i];
-		if (row >= 0 && row <8 && n < 8) {
+		if (row >= 0 && row < 8 && n < 8) {
 			int attr = ppu_oam[i + 2];
 			if (attr & 0x80) row = 7 - row;
-			int base = (ppu_ctrl & 0x08) ? 0x1000 : 0 + (ppu_oam[i + 1] << 4) + row;
-			ppu_line_sprites[n] = (ppu_line_sprite) { ppu_addr[base], ppu_addr[base+8], attr, ppu_oam[i + 3], 1 };
+			int base = ((ppu_ctrl & 0x08) ? 0x1000 : 0x0000) + (ppu_oam[i + 1] << 4) + row;
+			ppu_line_sprites[n] = (ppu_line_sprite) { 
+				i,
+				ppu_addr[base], 
+				ppu_addr[base+8], 
+				attr, 
+				ppu_oam[i + 3], 
+				ppu_oam[i + 0]
+			};
 			n++;
 		}
+		if (n >= 8) break;
 	}
 }
 
@@ -96,12 +105,14 @@ void ppu_dot() {
 	static int pxl_pos;
 	if (ppu_scanline == 0 && ppu_scan_dot == 0) {
 		// reset sprite 0 and sprite overflow bits
-		ppu_status &= ~0x60;
+		ppu_status &= (uint8_t) ~0x60;
 		pxl_pos = 0;
 	}
 	if (ppu_scanline < 240) {
 		// render space
 		if (ppu_scan_dot < 256) {
+			int bg_color = 0;
+			int spr_color = 0;
 			// BACKGROUND RENDER
 			// name table
 			// XXX needs scroll pos evaluation
@@ -127,26 +138,28 @@ void ppu_dot() {
 			if (attr_loc == 1) tile_pal = (attr & 0x0c) >> 2;
 			if (attr_loc == 2) tile_pal = (attr & 0x30) >> 4;
 			if (attr_loc == 3) tile_pal = (attr & 0xc0) >> 6;
-			int bg_color = (tile_row_lo & tile_col) ? 1 : 0;
+			bg_color = (tile_row_lo & tile_col) ? 1 : 0;
 			bg_color += (tile_row_hi & tile_col) ? 2 : 0;
 			bg_color += tile_pal << 2;
+
 			// SPRITE(s) RENDER
-			int spr_color = 0;
-			/*	to do:
-				sprite 0 collision detection
-			*/
+			spr_color = 0;
 			for (int i = 0; i < 8; i++) {
 				ppu_line_sprite *spr = &ppu_line_sprites[i];
-				int dx = (int) ppu_scan_dot - spr->x_pos;
-				if (!spr->active || dx < 0 || dx > 7) continue;
+				int dx = (int) ppu_scan_dot - (int) spr->x_pos;
+				if (dx < 0 || dx > 7) continue;
 				int bit = (spr->attributes & 0x40) ? dx : 7 - dx;
-				spr_color = ((spr->pattern0 >> bit) & 1) | (((spr->pattern1 >> bit) & 1) << 1);
-				if (spr_color) { 
-					spr_color += ((spr->attributes & 0x03) << 2) + 0x10;
+				int temp_color = ((spr->pattern0 >> bit) & 1) | (((spr->pattern1 >> bit) & 1) << 1);
+				if (temp_color) { 
+					if (spr->id == 0 && temp_color) {
+						ppu_status |= 0x40;
+					}
+					spr_color = temp_color + ((spr->attributes & 0x03) << 2) + 0x10;
 				}
 			}
-			// DONE
-			int pal_addr = spr_color ? spr_color : bg_color;
+
+			// DONE finding colors
+			int pal_addr = (spr_color & 0x03) ? spr_color : bg_color;
 			ppu_dot_data[pxl_pos] = nes_pal[ppu_addr[0x3f00 + pal_addr] & 0x3f];
 			pxl_pos++;
 		}
