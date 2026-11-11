@@ -81,15 +81,12 @@ void ppu_sprite_evaluation(int scanline) {
 	int n = 0;
 	// iterate over sprite oam data
 	for (int i = 0; i < 256; i += 4) {
-		int y = ppu_oam[i];
-		if (y > scanline - 7 && y < scanline + 7 && n < 8) {
-			ppu_line_sprites[n] = (ppu_line_sprite) {
-				ppu_addr[(ppu_oam[i + 1] << 5) + y],
-				ppu_addr[(ppu_oam[i + 1] << 5) + y + 8],
-				ppu_oam[i + 2],
-				ppu_oam[i + 3],
-				1
-			};
+		int row = scanline - ppu_oam[i];
+		if (row >= 0 && row <8 && n < 8) {
+			int attr = ppu_oam[i + 2];
+			if (attr & 0x80) row = 7 - row;
+			int base = (ppu_ctrl & 0x08) ? 0x1000 : 0 + (ppu_oam[i + 1] << 4) + row;
+			ppu_line_sprites[n] = (ppu_line_sprite) { ppu_addr[base], ppu_addr[base+8], attr, ppu_oam[i + 3], 1 };
 			n++;
 		}
 	}
@@ -130,26 +127,27 @@ void ppu_dot() {
 			if (attr_loc == 1) tile_pal = (attr & 0x0c) >> 2;
 			if (attr_loc == 2) tile_pal = (attr & 0x30) >> 4;
 			if (attr_loc == 3) tile_pal = (attr & 0xc0) >> 6;
-			int color = (tile_row_lo & tile_col) ? 1 : 0;
-			color += (tile_row_hi & tile_col) ? 2 : 0;
+			int bg_color = (tile_row_lo & tile_col) ? 1 : 0;
+			bg_color += (tile_row_hi & tile_col) ? 2 : 0;
+			bg_color += tile_pal << 2;
 			// SPRITE(s) RENDER
+			int spr_color = 0;
 			/*	to do:
 				sprite 0 collision detection
 			*/
 			for (int i = 0; i < 8; i++) {
 				ppu_line_sprite *spr = &ppu_line_sprites[i];
-				if (spr->x_pos == 0 || spr->active) {
-					int spr_color = (int)
-						(((spr->pattern0 < spr->active) & 0x08) +
-						(((spr->pattern1 < spr->active) & 0x08) << 1));
-					if (spr_color != 0) color = spr_color;
-					spr->active++;
-					if (spr->active == 8) spr->active = 0;
+				int dx = (int) ppu_scan_dot - spr->x_pos;
+				if (!spr->active || dx < 0 || dx > 7) continue;
+				int bit = (spr->attributes & 0x40) ? dx : 7 - dx;
+				spr_color = ((spr->pattern0 >> bit) & 1) | (((spr->pattern1 >> bit) & 1) << 1);
+				if (spr_color) { 
+					spr_color += ((spr->attributes & 0x03) << 2) + 0x10;
 				}
-				spr->x_pos--;
 			}
 			// DONE
-			ppu_dot_data[pxl_pos] = nes_pal[ppu_addr[0x3f00 + (tile_pal << 2) + color]];
+			int pal_addr = spr_color ? spr_color : bg_color;
+			ppu_dot_data[pxl_pos] = nes_pal[ppu_addr[0x3f00 + pal_addr] & 0x3f];
 			pxl_pos++;
 		}
 		// SPRITE EVALUATION
