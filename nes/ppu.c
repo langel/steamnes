@@ -23,6 +23,7 @@ ppu_line_sprite ppu_line_sprites[8];
 int ppu_dot_frame_max = 89341;
 int ppu_clock_div;
 int ppu_write;
+int ppu_nt_arrangement = 0;
 uint32_t ppu_dot_downcounter;
 
 uint8_t  ppu_ctrl = 0;
@@ -114,17 +115,31 @@ void ppu_dot() {
 			int bg_color = 0;
 			int spr_color = 0;
 			// BACKGROUND RENDER
-			// name table
-			// XXX needs scroll pos evaluation
-			int nt = 0x2000 + ((ppu_ctrl & 0x03) << 10);
 			// pattern table
 			int pt = (ppu_ctrl & 0x10) ? 0x1000 : 0x0000;
 			// scroll position
-			int pos_x = (ppu_scroll_x + ppu_scan_dot) % 256;
-			int pos_y = (ppu_scroll_y + ppu_scanline) % 240;
+			int pos_x, pos_x_hi;
+			pos_x = ppu_scroll_x + ppu_scan_dot;
+			pos_x_hi = (pos_x >> 8) & 1;
+			pos_x %= 256;
+			int pos_y, pos_y_hi;
+			pos_y = ppu_scroll_y + ppu_scanline;
+			pos_y_hi = (pos_y >> 8) & 1;
+			pos_y %= 240;
+			// name table
+			int nt = ppu_ctrl & 0x03;
+			if (ppu_nt_arrangement) {
+				// vertical arrangement
+				nt = (nt & 1) ^ pos_x_hi;
+			}
+			else {
+				// horizontal arrangement
+				nt = (nt & 2) ^ (pos_y_hi << 1);
+			}
+			nt = 0x2000 + (nt << 10);
 			// find current dot
-			int tile_id = ppu_addr[nt + (ppu_scan_dot >> 3) + ((pos_y >> 3) << 5)];
-			int tile_x = ppu_scan_dot & 0x07;
+			int tile_id = ppu_addr[nt + (pos_x >> 3) + ((pos_y >> 3) << 5)];
+			int tile_x = pos_x & 0x07;
 			int tile_col = 1 << (0x07 - tile_x);
 			int tile_y = pos_y & 0x07;
 			int tile_offset = pt + (tile_id << 4) + tile_y;
@@ -133,7 +148,7 @@ void ppu_dot() {
 			// attributes
 			int tile_pal = 0;
 			int attr = ppu_addr[nt + 0x3c0 + (pos_x >> 5) + ((pos_y >> 5) << 3)];
-			int attr_loc = ((pos_x >> 3) & 1) + (((pos_y >> 3) & 1) << 1);
+			int attr_loc = ((pos_x >> 4) & 1) | (((pos_y >> 4) & 1) << 1);
 			if (attr_loc == 0) tile_pal = attr & 0x03;
 			if (attr_loc == 1) tile_pal = (attr & 0x0c) >> 2;
 			if (attr_loc == 2) tile_pal = (attr & 0x30) >> 4;

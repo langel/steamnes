@@ -20,6 +20,11 @@ int rom_prg_size;
 int rom_prg_start;
 uint8_t* rom_prg_data;
 
+const char* const rom_nt_arrangements[2] = {
+	"vertical", 
+	"horizontal",
+};
+
 
 int rom_load(char* filename) {
 	// XXX TODO
@@ -60,6 +65,7 @@ int rom_load(char* filename) {
 		rom_has_trainer = 512;
 	}
 	rom_mapper = rom_header[6] >> 4;
+	ppu_nt_arrangement = rom_header[6] & 0x01;
 	// HEADER TYPE & MAPPER
 	// byte 7 has mapper hi bits, NES2 flag, misc.
 	if ((rom_header[7] & 0x04) == 0x04) {
@@ -82,6 +88,7 @@ int rom_load(char* filename) {
 	}
 	debug_out(3, "%s header found", rom_header_type_str);
 	debug_out(3, "Mapper ID %i", rom_mapper);
+	debug_out(3, "nametable arrangement: %s", rom_nt_arrangements[ppu_nt_arrangement]);
 	// PRG LOADER
 	rom_prg_start = 16 + rom_has_trainer;
 	rom_prg_data = malloc(rom_prg_size);
