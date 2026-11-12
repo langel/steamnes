@@ -18,4 +18,6 @@ uint32_t mbu_cycle_count;
 #include "./pal.c"
 #include "./ppu.c"
 
+#include "./port.c"
+
 #include "./mbu.c"

@@ -73,6 +73,10 @@ void mbu_frame() {
 				// setup for potential cpu reads
 				mbu_ppu_to_cpu(ppu_addr[ppu_pw], 0x2007);
 			}
+			// CONTROLLER READ
+			if (cpu_bus == 0x4016) {
+				cpu_a = port_bitbang();
+			}
 			cpu_read = 0;
 		}
 		if (cpu_write) {
@@ -126,6 +130,10 @@ void mbu_frame() {
 				memcpy(&ppu_oam, &cpu_addr[cpu_a << 8], 0x100);
 				cpu_cl = 513;
 				//debug_out(3, "oam dma");
+			}
+			// CONTROLLER STROBE
+			if (cpu_bus == 0x4016) {
+				port_latch(cpu_addr[0x4016]);
 			}
 			cpu_write = 0;
 		}
