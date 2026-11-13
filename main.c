@@ -60,7 +60,8 @@ int main(int argc, char* args[]) {
 		frame_wait_next();
 		fcl_update();
 		if (keys[SDL_SCANCODE_ESCAPE]) fcl_shutdown();
-	}
+	} 
+	if (controller) SDL_GameControllerClose(controller);
 	fcl_quit();
 	return 0;
 }

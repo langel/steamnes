@@ -12,6 +12,7 @@ uint8_t mbu_data_bus;
 #define mbu_ppu_to_cpu(data, addr) { cpu_addr[addr] = data; }
 
 void mbu_init() {
+	port_init();
 	ppu_init();
 }
 
