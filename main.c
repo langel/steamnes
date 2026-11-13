@@ -29,20 +29,20 @@ int main(int argc, char* args[]) {
 	debug_level = 4;
 	debug_out(1, "SteamNES");
 	int error = rom_load("game_rom.nes");
-	//int error = rom_load("roms//Baseball (J).nes"); // illegal opcode 0x1a
+	//int error = rom_load("roms//Baseball (J).nes"); 
 	//int error = rom_load("roms//Burger Time (J).nes"); // gray
 	//int error = rom_load("roms//Dig Dug II (J) [!].nes"); // tiles
 	//int error = rom_load("roms//Door Door (J).nes"); // barely anything
-	//int error = rom_load("roms//Elevator Action (J).nes"); // illegal opcode 0xff
+	//int error = rom_load("roms//Elevator Action (J).nes"); 
 	//int error = rom_load("roms//F-1 Race (J).nes"); // tiles
 	//int error = rom_load("roms//Pac-Land (J) [a1].nes"); // mmc1
 	//int error = rom_load("roms//Spartan X (J).nes"); // tiles
 	//int error = rom_load("roms//Sqoon (J) [!].nes"); // gray
 	//int error = rom_load("roms//Super Mario Bros..nes"); // gray
 	//int error = rom_load("roms//Thexder (J) [!].nes");
-	//int error = rom_load("test_roms//01-implied.nes"); // illegal opcode 0x1a
-	//int error = rom_load("test_roms//02-immediate.nes");
-	//int error = rom_load("test_roms//03-zero_page.nes"); // illegal opcoce 0x04
+	//int error = rom_load("test_roms//01-implied.nes"); // crashes
+	//int error = rom_load("test_roms//02-immediate.nes"); // illegal opcode 0xeb
+	//int error = rom_load("test_roms//03-zero_page.nes"); // illegal opcoce 0x07
 	//int error = rom_load("test_roms//official_only.nes"); // mapper 1
 	//int error = rom_load("test_roms//AccuracyCoin.nes");
 	if (error) {

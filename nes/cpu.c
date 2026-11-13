@@ -186,7 +186,12 @@ void cpu_reset() {
 // weirdos
 #define bit_abs() { cpu_addr_load_abs(); cpu_op_bit(cpu_addr[cpu_bus]); cpu_read++; cpu_cl = 4; }
 #define bit_zpg() { cpu_addr_load_zpg(); cpu_op_bit(cpu_addr[cpu_bus]); cpu_read++; cpu_cl = 3; }
-#define nop_imm() { cpu_pw++; cpu_cl = 2; }
+#define nop_acc() { cpu_pw++; cpu_cl = 2; }
+#define nop_imm() { cpu_pw += 2; cpu_cl = 2; }
+#define nop_zpg() { cpu_pw += 2; cpu_cl = 3; }
+#define nop_zpx() { cpu_pw += 2; cpu_cl = 3; }
+#define nop_abs() { cpu_pw += 3; cpu_cl = 4; }
+#define nop_abx() { cpu_pw += 3; cpu_cl = 4; }
 // branchers
 #define bcc_op()  { cpu_branch(!(cpu_p & cpu_fc)); cpu_cl = 2; }
 #define bcs_op()  { cpu_branch(  cpu_p & cpu_fc);  cpu_cl = 2; }
@@ -419,14 +424,34 @@ void cpu_cycle() {
 		case 0x2c: bit_abs(); break;
 		case 0x24: bit_zpg(); break;
 		case 0x00: brk_op();  break;
-		case 0x1a: nop_imm(); break;
-		case 0x3a: nop_imm(); break;
-		case 0x5a: nop_imm(); break;
-		case 0x7a: nop_imm(); break;
+		case 0x1a: nop_acc(); break;
+		case 0x3a: nop_acc(); break;
+		case 0x5a: nop_acc(); break;
+		case 0x7a: nop_acc(); break;
+		case 0xda: nop_acc(); break;
+		case 0xea: nop_acc(); break;
+		case 0xfa: nop_acc(); break;
 		case 0x80: nop_imm(); break;
-		case 0xda: nop_imm(); break;
-		case 0xea: nop_imm(); break;
-		case 0xfa: nop_imm(); break;
+		case 0x82: nop_imm(); break;
+		case 0x89: nop_imm(); break;
+		case 0xc2: nop_imm(); break;
+		case 0xe2: nop_imm(); break;
+		case 0x04: nop_zpg(); break;
+		case 0x44: nop_zpg(); break;
+		case 0x64: nop_zpg(); break;
+		case 0x14: nop_zpx(); break;
+		case 0x34: nop_zpx(); break;
+		case 0x54: nop_zpx(); break;
+		case 0x74: nop_zpx(); break;
+		case 0xd4: nop_zpx(); break;
+		case 0xf4: nop_zpx(); break;
+		case 0x0c: nop_abs(); break;
+		case 0x1c: nop_abx(); break;
+		case 0x3c: nop_abx(); break;
+		case 0x5c: nop_abx(); break;
+		case 0x7c: nop_abx(); break;
+		case 0xdc: nop_abx(); break;
+		case 0xfc: nop_abx(); break;
 		// branchers
 		case 0x90: bcc_op();  break;
 		case 0xb0: bcs_op();  break;
