@@ -59,8 +59,10 @@ void port_latch(uint8_t byte) {
 	}
 }
 
-int port_bitbang() {
-	int bit = controller_1 & 0x01;
+void port_bitbang() {
 	controller_1 >>= 1;
-	return bit;
+}
+
+uint8_t port_peek() {
+	return controller_1 & 0x01;
 }

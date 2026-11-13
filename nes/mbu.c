@@ -35,6 +35,8 @@ void mbu_frame() {
 		apu_clock();
 		if (!cpu_countdowner) {
 			cpu_countdowner = cpu_clock_div;
+			// refresh port data
+			cpu_addr[0x4016] = port_peek();
 //			if (nes_nmi) debug_out(3, "nmi troubles");
 			if (nes_nmi && (ppu_ctrl & 0x80)) {
 				// end of frame
@@ -76,7 +78,7 @@ void mbu_frame() {
 			}
 			// CONTROLLER READ
 			if (cpu_bus == 0x4016) {
-				cpu_a = port_bitbang();
+				port_bitbang();
 			}
 			cpu_read = 0;
 		}
