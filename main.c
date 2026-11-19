@@ -58,6 +58,7 @@ int main(int argc, char* args[]) {
 		mbu_frame();
 		frame_counter++;
 		frame_wait_next();
+		//debug_out(3, "%x %x", cpu_addr[0x400a], cpu_addr[0x400b] & 0x7);
 		fcl_update();
 		if (keys[SDL_SCANCODE_ESCAPE]) fcl_shutdown();
 	} 

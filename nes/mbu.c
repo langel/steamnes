@@ -87,6 +87,10 @@ void mbu_frame() {
 			//if (cpu_read) debug_out(3, "cpu r  0x%4x", cpu_bus);
 			//if (cpu_write) debug_out(3, "cpu w  0x%4x", cpu_bus);
 			mbu_data_bus = cpu_addr[cpu_bus];
+			// APU
+			if (cpu_bus == 0x400a) {
+				debug_out(3, "%x %x", cpu_addr[0x400a], cpu_addr[0x400b] & 0x7);
+			}
 			// PPU CTRL
 			if (cpu_bus == 0x2000) {
 				ppu_ctrl = cpu_addr[0x2000];

@@ -8,7 +8,7 @@ float apu_samples_per_cycle = 0.f;
 float apu_samples_pos = 0.f;
 float apu_pinout = 0.f;
 
-int apu_tri_length_counter = 0;
+int apu_tri_timer_counter = 0;
 int apu_tri_seq_pos = 0;
 int apu_tri_sample = 0;
 
@@ -24,18 +24,25 @@ const int apu_tri_sequence[32] = {
 	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
 };
  
+
 void apu_clock() {
-	apu_tri_length_counter--;
-	if (apu_tri_length_counter < 0) {
-		apu_tri_seq_pos++;
-		apu_tri_seq_pos &= 0x1f;
-		apu_tri_length_counter = cpu_addr[0x400a] + (cpu_addr[0x400b] << 8);
-		apu_tri_sample = apu_tri_sequence[apu_tri_seq_pos];
-		//debug_out(3, "%X %X", apu_tri_sample, apu_tri_seq_pos);
-		//debug_out(3, "%b", apu_tri_length_counter);
+	if ((cpu_addr[0x4015] & 0x4) && !(cpu_addr[0x4008] & 0x80)) {
+		if (--apu_tri_timer_counter <= 0) {
+			apu_tri_seq_pos = (apu_tri_seq_pos + 1) & 0x1f;
+			apu_tri_timer_counter = (int) (cpu_addr[0x400a] | (((cpu_addr[0x400b] & 0x7) << 8) + 1));
+			apu_tri_sample = apu_tri_sequence[apu_tri_seq_pos];
+			//debug_out(3, "%X %X", apu_tri_sample, apu_tri_seq_pos);
+			//debug_out(3, "%b", apu_tri_timer_counter);
+		}
 	}
-	apu_pinout = (float) apu_tri_sample * 0.1f;
+	else {
+		apu_tri_sample = 0.f;
+	}
+	// xxx need passive output filters
+	apu_pinout = ((float) apu_tri_sample - 7.5f) / 7.5f;
+	apu_pinout *= 0.1f;
 }
+
 
 void apu_buffer_out(void* userdata, uint8_t* byte_stream, int byte_stream_length) {
 	
@@ -55,13 +62,14 @@ void apu_buffer_out(void* userdata, uint8_t* byte_stream, int byte_stream_length
 		float_stream[i] = output_l;
 		float_stream[i+1] = output_r;
 	}
-
 }
+
 
 void apu_init() {
 	debug_out(3, "initializing apu");
 	audio_init(48000, 2, 1024, AUDIO_F32SYS, &apu_buffer_out);
-	apu_samples_per_cycle = (float) audio_spec.freq / (float) clock_ntsc;
+	float cpu_hz = (float) clock_ntsc / 12.f;
+	apu_samples_per_cycle = (float) audio_spec.freq / cpu_hz;
 	debug_out(3, "samples per cycle: %f", apu_samples_per_cycle);
 }
 
