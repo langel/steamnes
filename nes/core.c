@@ -13,8 +13,8 @@ uint32_t ppu_frame_count;
 uint32_t ppu_cycle_count;
 uint32_t mbu_cycle_count;
 
-#include "./apu.c"
 #include "./cpu.c"
+#include "./apu.c"
 #include "./pal.c"
 #include "./ppu.c"
 

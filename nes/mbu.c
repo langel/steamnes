@@ -12,6 +12,7 @@ uint8_t mbu_data_bus;
 #define mbu_ppu_to_cpu(data, addr) { cpu_addr[addr] = data; }
 
 void mbu_init() {
+	apu_init();
 	port_init();
 	ppu_init();
 }
@@ -32,7 +33,7 @@ void mbu_start() {
 
 void mbu_frame() {
 	while (mbu_running) {
-		apu_clock();
+		//apu_clock();
 		if (!cpu_countdowner) {
 			cpu_countdowner = cpu_clock_div;
 			// refresh port data

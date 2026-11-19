@@ -7,7 +7,7 @@ double audio_bend = 1.0;
 
 
 void audio_spec_log(SDL_AudioSpec *as) {
-	debug_out(5,
+	debug_out(3,
 		" freq______%5d\n"
 		" format____%5d\n"
 		" channels__%5d\n"

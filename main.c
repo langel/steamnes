@@ -3,15 +3,15 @@
 #define SCREEN_W 350
 #define SCREEN_H 240
 
+int frame_counter;
+
 #include "./fcl/core.c"
 #include "./nes/core.c"
 #include "./emu/core.c"
 
-int frame_counter;
-
 void core_init() {
 	fcl_init();
-	audio_init(32000, 2, 1024, AUDIO_F32SYS, &audio_callback);
+	//audio_init(32000, 2, 1024, AUDIO_F32SYS, &audio_callback);
 	window_state_set_filename("snw");
 	window_init("SteamNES");
 	window_ontop_set_true(window);
