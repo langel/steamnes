@@ -88,8 +88,17 @@ void mbu_frame() {
 			//if (cpu_write) debug_out(3, "cpu w  0x%4x", cpu_bus);
 			mbu_data_bus = cpu_addr[cpu_bus];
 			// APU
-			if (cpu_bus == 0x400a) {
-				debug_out(3, "%x %x", cpu_addr[0x400a], cpu_addr[0x400b] & 0x7);
+			if (cpu_bus == 0x4008) {
+				apu_tri_length_halt = (cpu_addr[0x4008] & 0x80);
+				apu_tri_linear_counter = cpu_addr[0x4008] & 0x7f;
+			}
+			if (cpu_bus == 0x400b) {
+				apu_tri_length_counter = apu_length_table[cpu_addr[0x400b] >> 3];
+				apu_tri_linear_reload = 1;
+			}
+			// xxx setting enables necessary?
+			if (cpu_bus == 0x4015) {
+				//apu_tri_enabled = (cpu_addr[0x4015] & 0x04);
 			}
 			// PPU CTRL
 			if (cpu_bus == 0x2000) {
