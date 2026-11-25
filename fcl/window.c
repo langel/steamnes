@@ -27,12 +27,12 @@ void window_state_load() {
 		rect = (SDL_Rect) { 100, 100, 1024, 576 };
 	}
 	else {
-		FILE * fp = fopen(path, "r");
+		FILE * fp = fopen(path, "rb");
 		fread(&rect, sizeof(struct SDL_Rect), 1, fp);
 		fclose(fp);
 	}
-	//printf("window position: %d x %d\n", rect.x, rect.y);
-	//printf("window dimensions: %d x %d\n", rect.w, rect.h);
+	debug_out(3, "window position: %d x %d", rect.x, rect.y);
+	debug_out(3, "window dimensions: %d x %d", rect.w, rect.h);
 	SDL_SetWindowSize(window, rect.w, rect.h);
 	SDL_SetWindowPosition(window, rect.x, rect.y);
 }
@@ -43,12 +43,12 @@ void window_state_save() {
 	// XXX struggling to remember window size
 	SDL_GetRendererOutputSize(SDL_GetRenderer(window), &rect.w, &rect.h);
 //	SDL_GetWindowSize(window, &rect.w, &rect.h);
-	//printf("window position: %d x %d\n", rect.x, rect.y);
-	//printf("window dimensions: %d x %d\n", rect.w, rect.h);
+	debug_out(3, "window position: %d x %d", rect.x, rect.y);
+	debug_out(3, "window dimensions: %d x %d", rect.w, rect.h);
 	char * path = str_new(256);
 	snprintf(path, 256+4, "%s%s", window_state_file, window_file_ext);
-	printf("%s\n", path);
-	FILE * fp = fopen(path, "w");
+	debug_out(3, "saving %s", path);
+	FILE * fp = fopen(path, "wb");
 	fwrite(&rect, sizeof(struct SDL_Rect), 1, fp);
 	fclose(fp);
 }
