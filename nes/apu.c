@@ -81,7 +81,7 @@ void apu_clock() {
 	if (!((cpu_addr[0x4015] & 0x4) && apu_tri_length_counter && apu_tri_linear_counter)) {
 		apu_tri_sample = 0.f;
 	}
-	apu_pinout = apu_tri_sample * 0.1f;
+	apu_pinout = apu_tri_sample * 0.075f;
 }
 
 
@@ -128,7 +128,7 @@ void apu_init() {
 	float cutoff_freq, rc, dt;
 	dt = 1.0f / audio_spec.freq;
 	// init hi pass filter
-	cutoff_freq = 20.f;
+	cutoff_freq = 60.f;
 	rc = 1.0f / (2.0f * (float) M_PI * cutoff_freq);
 	apu_hpf_cutoff = rc / (rc + dt);
 	// init lo pass filter

@@ -68,9 +68,12 @@ void ppu_frame() {
 //		ppu_dot_data[i] = nes_pal[ppu_addr[i] & 0x3f];
 	}
 	// XXX debug palettes
-	for (int i = 0; i < 32; i += 2) {
-		ppu_dot_data[i*256] = nes_pal[ppu_addr[0x3f00 + i]];
-		ppu_dot_data[(i+1)*256] = nes_pal[ppu_addr[0x3f00 + i]];
+	for (int i = 0; i < 32; i++) {
+		uint32_t c = nes_pal[ppu_addr[0x3f00 + i] & 0x3f];
+		int x = (i % 4) << 2;
+		int y = (i >> 2) << 2;
+		SDL_SetRenderDrawColor(fvc_renderer, c >> 24, (c >> 16) & 0xff, (c >> 8) & 0xff, 0xff);
+		SDL_RenderFillRect(fvc_renderer, &(SDL_Rect) { x + 334, y, 4, 4 });
 	}
 	SDL_UpdateTexture(ppu_dot_texture, NULL, ppu_dot_data, 256 * 4);
 	SDL_RenderCopy(fvc_renderer, ppu_dot_texture, NULL, &(SDL_Rect) { 47, 0, 256, 240 });
